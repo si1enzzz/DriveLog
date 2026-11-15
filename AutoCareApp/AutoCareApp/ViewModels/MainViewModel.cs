@@ -9,29 +9,38 @@ namespace AutoCareApp.ViewModels;
 
 public partial class MainViewModel : ViewModelBase
 {
-    // Название автомобиля
+    // Список всех автомобилей пользователя
+    public ObservableCollection<Vehicle> Vehicles { get; } = new();
+
+    // Текущий выбранный автомобиль
     [ObservableProperty]
-    public partial string CarName { get; set; } = "Lada Vesta 1.6";
+    [NotifyPropertyChangedFor(nameof(CanDeleteVehicle))]
+    public partial Vehicle? SelectedVehicle { get; set; }
 
-    // Текущий пробег автомобиля
+    // Можно ли удалить машину (если осталась только 1 — удалять нельзя!)
+    public bool CanDeleteVehicle => Vehicles.Count > 1;
+
+    // Флаг: открыта ли форма добавления НОВОГО АВТО
     [ObservableProperty]
-    public partial int CurrentMileage { get; set; } = 125000;
+    public partial bool IsAddingVehicle { get; set; } = false;
 
-    // Список записей о заменах
-    public ObservableCollection<ServiceRecord> Records { get; } = new();
+    [ObservableProperty]
+    public partial string NewVehicleName { get; set; } = string.Empty;
 
-    // Общая сумма, потраченная на все ремонты
-    public decimal TotalSpent => Records.Sum(r => r.TotalCost);
+    [ObservableProperty]
+    public partial decimal? NewVehicleMileage { get; set; } = 0;
 
-    // Флаг: открыта ли форма добавления новой записи
+    [ObservableProperty]
+    public partial string VehicleErrorMessage { get; set; } = string.Empty;
+
+    // Флаг: открыта ли форма добавления ЗАПИСИ О ЗАМЕНЕ
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(AddButtonText))]
     public partial bool IsAddingRecord { get; set; } = false;
 
-    // Текст на кнопке переключения формы
     public string AddButtonText => IsAddingRecord ? "✕ Отмена" : "+ Добавить запись о замене";
 
-    // Поля формы ввода:
+    // Поля формы ввода запчасти:
     [ObservableProperty]
     public partial string NewPartTitle { get; set; } = string.Empty;
 
@@ -39,7 +48,7 @@ public partial class MainViewModel : ViewModelBase
     public partial string NewCategory { get; set; } = "ТО";
 
     [ObservableProperty]
-    public partial decimal? NewMileage { get; set; } = 125000;
+    public partial decimal? NewMileage { get; set; } = 0;
 
     [ObservableProperty]
     public partial decimal? NewPartCost { get; set; } = 0;
@@ -54,15 +63,18 @@ public partial class MainViewModel : ViewModelBase
     public partial string NewNotes { get; set; } = string.Empty;
 
     [ObservableProperty]
-    public partial string ErrorMessage { get; set; } = string.Empty;
+    public partial string RecordErrorMessage { get; set; } = string.Empty;
 
     public MainViewModel()
     {
-        // Слушаем изменения коллекции, чтобы при добавлении/удалении пересчитывать TotalSpent
-        Records.CollectionChanged += (_, _) => OnPropertyChanged(nameof(TotalSpent));
+        // Создаем первый стартовый автомобиль
+        var defaultCar = new Vehicle
+        {
+            Name = "Lada Vesta 1.6",
+            CurrentMileage = 125000
+        };
 
-        // Демо-данные
-        Records.Add(new ServiceRecord
+        defaultCar.Records.Add(new ServiceRecord
         {
             PartTitle = "Моторное масло 5W-40 + Фильтр",
             Category = "ТО",
@@ -74,7 +86,7 @@ public partial class MainViewModel : ViewModelBase
             Notes = "Артикул фильтра MANN W914/2"
         });
 
-        Records.Add(new ServiceRecord
+        defaultCar.Records.Add(new ServiceRecord
         {
             PartTitle = "Передние тормозные колодки",
             Category = "Тормоза",
@@ -85,38 +97,103 @@ public partial class MainViewModel : ViewModelBase
             ServiceName = "Сам в гараже",
             Notes = "Заменил за 1.5 часа"
         });
+
+        Vehicles.Add(defaultCar);
+        SelectedVehicle = defaultCar;
     }
 
-    // Команда открытия/закрытия формы
+    partial void OnSelectedVehicleChanged(Vehicle? value)
+    {
+        OnPropertyChanged(nameof(CanDeleteVehicle));
+        if (value != null)
+        {
+            NewMileage = value.CurrentMileage;
+        }
+    }
+
+    // --- УПРАВЛЕНИЕ АВТОМОБИЛЯМИ ---
+
+    [RelayCommand]
+    private void ToggleAddVehicle()
+    {
+        IsAddingVehicle = !IsAddingVehicle;
+        VehicleErrorMessage = string.Empty;
+        NewVehicleName = string.Empty;
+        NewVehicleMileage = 0;
+    }
+
+    [RelayCommand]
+    private void AddVehicle()
+    {
+        if (string.IsNullOrWhiteSpace(NewVehicleName))
+        {
+            VehicleErrorMessage = "⚠️ Введите марку или модель авто!";
+            return;
+        }
+
+        var vehicle = new Vehicle
+        {
+            Name = NewVehicleName.Trim(),
+            CurrentMileage = (int)(NewVehicleMileage ?? 0)
+        };
+
+        Vehicles.Add(vehicle);
+        SelectedVehicle = vehicle;
+
+        NewVehicleName = string.Empty;
+        NewVehicleMileage = 0;
+        VehicleErrorMessage = string.Empty;
+        IsAddingVehicle = false;
+        OnPropertyChanged(nameof(CanDeleteVehicle));
+    }
+
+    [RelayCommand]
+    private void DeleteCurrentVehicle()
+    {
+        if (SelectedVehicle == null || Vehicles.Count <= 1)
+        {
+            return; // Нельзя удалить единственный авто
+        }
+
+        var toRemove = SelectedVehicle;
+        Vehicles.Remove(toRemove);
+        SelectedVehicle = Vehicles.FirstOrDefault();
+        OnPropertyChanged(nameof(CanDeleteVehicle));
+    }
+
+    // --- УПРАВЛЕНИЕ ЗАПИСЯМИ ---
+
     [RelayCommand]
     private void ToggleAddForm()
     {
         IsAddingRecord = !IsAddingRecord;
-        ErrorMessage = string.Empty;
+        RecordErrorMessage = string.Empty;
 
-        if (IsAddingRecord)
+        if (IsAddingRecord && SelectedVehicle != null)
         {
-            // Подставим актуальный пробег машины в поле ввода
-            NewMileage = CurrentMileage;
+            NewMileage = SelectedVehicle.CurrentMileage;
         }
     }
 
-    // Команда сохранения новой записи
     [RelayCommand]
     private void SaveRecord()
     {
-        // 1. Валидация ввода (защита от пустых значений)
-        if (string.IsNullOrWhiteSpace(NewPartTitle))
+        if (SelectedVehicle == null)
         {
-            ErrorMessage = "⚠️ Пожалуйста, введите название детали!";
+            RecordErrorMessage = "⚠️ Сначала выберите автомобиль!";
             return;
         }
 
-        int mileageAtSwap = (int)(NewMileage ?? CurrentMileage);
+        if (string.IsNullOrWhiteSpace(NewPartTitle))
+        {
+            RecordErrorMessage = "⚠️ Пожалуйста, введите название детали!";
+            return;
+        }
+
+        int mileageAtSwap = (int)(NewMileage ?? SelectedVehicle.CurrentMileage);
         decimal partCost = NewPartCost ?? 0m;
         decimal laborCost = NewLaborCost ?? 0m;
 
-        // 2. Создаем новую запись
         var record = new ServiceRecord
         {
             PartTitle = NewPartTitle.Trim(),
@@ -129,23 +206,20 @@ public partial class MainViewModel : ViewModelBase
             Date = DateTime.Today
         };
 
-        // 3. Вставляем запись в самое начало списка (чтобы свежая была сверху!)
-        Records.Insert(0, record);
+        // Вставляем в список текущего авто
+        SelectedVehicle.Records.Insert(0, record);
 
-        // 4. Если введённый пробег больше текущего — обновим текущий пробег авто
-        if (mileageAtSwap > CurrentMileage)
+        // Обновляем пробег авто, если новый пробег больше
+        if (mileageAtSwap > SelectedVehicle.CurrentMileage)
         {
-            CurrentMileage = mileageAtSwap;
+            SelectedVehicle.CurrentMileage = mileageAtSwap;
         }
 
-        // 5. Очищаем поля формы для следующего раза
         NewPartTitle = string.Empty;
         NewPartCost = 0m;
         NewLaborCost = 0m;
         NewNotes = string.Empty;
-        ErrorMessage = string.Empty;
-
-        // Закрываем форму
+        RecordErrorMessage = string.Empty;
         IsAddingRecord = false;
     }
 }
