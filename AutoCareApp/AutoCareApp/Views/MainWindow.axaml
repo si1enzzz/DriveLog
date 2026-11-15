@@ -3,8 +3,8 @@
         xmlns:vm="using:AutoCareApp.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="450" d:DesignHeight="700"
-        Width="450" Height="750"
+        mc:Ignorable="d" d:DesignWidth="450" d:DesignHeight="750"
+        Width="460" Height="800"
         x:Class="AutoCareApp.Views.MainWindow"
         x:DataType="vm:MainViewModel"
         Title="Журнал обслуживания авто"
@@ -34,8 +34,84 @@
                 </StackPanel>
             </Border>
 
+            <!-- Кнопка «+ Добавить запись» / «✕ Отмена» -->
+            <Button Content="{Binding AddButtonText}"
+                    Command="{Binding ToggleAddFormCommand}"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    Background="#252A40"
+                    Foreground="White"
+                    FontWeight="SemiBold"
+                    FontSize="15"
+                    Height="44"
+                    CornerRadius="12" />
+
+            <!-- Форма добавления (показывается только если IsAddingRecord == true) -->
+            <Border Background="#1A1D2E" 
+                    CornerRadius="16" 
+                    Padding="18" 
+                    IsVisible="{Binding IsAddingRecord}"
+                    BorderBrush="#3A86FF"
+                    BorderThickness="1">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Новая запись о замене" FontSize="18" FontWeight="Bold" Foreground="White" />
+
+                    <!-- Сообщение об ошибке (если забыли название) -->
+                    <TextBlock Text="{Binding ErrorMessage}" Foreground="#FF6B6B" FontWeight="SemiBold" FontSize="13" />
+
+                    <!-- Название детали -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Что меняли *" Foreground="#8A90A6" FontSize="12" />
+                        <TextBox Text="{Binding NewPartTitle}" PlaceholderText="Например: Свечи зажигания NGK" />
+                    </StackPanel>
+
+                    <!-- Пробег и Сервис в две колонки -->
+                    <Grid ColumnDefinitions="*, *" Margin="0, 2, 0, 0">
+                        <StackPanel Grid.Column="0" Spacing="4" Margin="0, 0, 6, 0">
+                            <TextBlock Text="Пробег (км)" Foreground="#8A90A6" FontSize="12" />
+                            <NumericUpDown Value="{Binding NewMileage}" Minimum="0" FormatString="N0" HorizontalAlignment="Stretch" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="4" Margin="6, 0, 0, 0">
+                            <TextBlock Text="Где меняли" Foreground="#8A90A6" FontSize="12" />
+                            <TextBox Text="{Binding NewServiceName}" PlaceholderText="Сам в гараже" />
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Цены: деталь и работа -->
+                    <Grid ColumnDefinitions="*, *" Margin="0, 2, 0, 0">
+                        <StackPanel Grid.Column="0" Spacing="4" Margin="0, 0, 6, 0">
+                            <TextBlock Text="Цена детали (₽)" Foreground="#8A90A6" FontSize="12" />
+                            <NumericUpDown Value="{Binding NewPartCost}" Minimum="0" FormatString="N0" HorizontalAlignment="Stretch" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="4" Margin="6, 0, 0, 0">
+                            <TextBlock Text="Цена работы (₽)" Foreground="#8A90A6" FontSize="12" />
+                            <NumericUpDown Value="{Binding NewLaborCost}" Minimum="0" FormatString="N0" HorizontalAlignment="Stretch" />
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Заметка -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Заметка / Артикул" Foreground="#8A90A6" FontSize="12" />
+                        <TextBox Text="{Binding NewNotes}" PlaceholderText="Артикул детали, бренд, вязкость..." />
+                    </StackPanel>
+
+                    <!-- Кнопка «Сохранить запись» -->
+                    <Button Content="✓ Сохранить запись"
+                            Command="{Binding SaveRecordCommand}"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"
+                            Background="#4EBA6F"
+                            Foreground="White"
+                            FontWeight="Bold"
+                            FontSize="15"
+                            Height="44"
+                            CornerRadius="10"
+                            Margin="0, 6, 0, 0" />
+                </StackPanel>
+            </Border>
+
             <!-- Заголовок истории -->
-            <TextBlock Text="История обслуживания" FontSize="18" FontWeight="Bold" Foreground="White" Margin="4, 8, 0, 0" />
+            <TextBlock Text="История обслуживания" FontSize="18" FontWeight="Bold" Foreground="White" Margin="4, 4, 0, 0" />
 
             <!-- Список записей (ItemsControl) -->
             <ItemsControl ItemsSource="{Binding Records}">
