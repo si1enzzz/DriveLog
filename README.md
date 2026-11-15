@@ -89,9 +89,3 @@ cd app-to-drivers
 # Запуск приложения
 dotnet run --project AutoCareApp/AutoCareApp
 ```
-
----
-
-## 👨‍💻 Автор
-* **GitHub:** [@si1enzzz](https://github.com/si1enzzz)
-* Проект подготовлен в рамках портфолио для поступления в профильные университеты (Software Engineering).
