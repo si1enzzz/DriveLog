@@ -31,6 +31,7 @@ public partial class MainViewModel : ViewModelBase
 
     // --- ФОРМА ДОБАВЛЕНИЯ АВТОМОБИЛЯ ---
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsAnyFormOpen))]
     public partial bool IsAddingVehicle { get; set; } = false;
 
     [ObservableProperty]
@@ -60,9 +61,13 @@ public partial class MainViewModel : ViewModelBase
     // --- ФОРМА ДОБАВЛЕНИЯ ЗАПИСИ ---
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(AddButtonText))]
+    [NotifyPropertyChangedFor(nameof(IsAnyFormOpen))]
     public partial bool IsAddingRecord { get; set; } = false;
 
     public string AddButtonText => IsAddingRecord ? "Отмена" : "Добавить запись о замене";
+
+    // Открыта ли хоть одна модальная форма (для эффекта затемнения фона)
+    public bool IsAnyFormOpen => IsAddingVehicle || IsAddingRecord;
 
     [ObservableProperty]
     public partial string NewPartTitle { get; set; } = string.Empty;
@@ -172,6 +177,12 @@ public partial class MainViewModel : ViewModelBase
     private void ToggleAddVehicle()
     {
         IsAddingVehicle = !IsAddingVehicle;
+        if (IsAddingVehicle)
+        {
+            // Взаимное закрытие: если открываем добавление авто, закрываем форму записи
+            IsAddingRecord = false;
+        }
+
         VehicleErrorMessage = string.Empty;
         NewBrand = string.Empty;
         NewModel = string.Empty;
@@ -238,12 +249,27 @@ public partial class MainViewModel : ViewModelBase
     private void ToggleAddForm()
     {
         IsAddingRecord = !IsAddingRecord;
+        if (IsAddingRecord)
+        {
+            // Взаимное закрытие: если открываем добавление записи, закрываем добавление авто
+            IsAddingVehicle = false;
+        }
+
         RecordErrorMessage = string.Empty;
 
         if (IsAddingRecord && SelectedVehicle != null)
         {
             NewMileage = SelectedVehicle.CurrentMileage;
         }
+    }
+
+    [RelayCommand]
+    private void CloseAllForms()
+    {
+        IsAddingVehicle = false;
+        IsAddingRecord = false;
+        VehicleErrorMessage = string.Empty;
+        RecordErrorMessage = string.Empty;
     }
 
     [RelayCommand]

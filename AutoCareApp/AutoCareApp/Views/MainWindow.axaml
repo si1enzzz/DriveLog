@@ -53,298 +53,351 @@
         </Style>
     </Window.Styles>
 
-    <ScrollViewer Margin="16">
-        <StackPanel Spacing="14">
+    <Grid>
+        <!-- СЛОЙ 0: Основное содержимое приложения -->
+        <ScrollViewer Margin="16">
+            <StackPanel Spacing="14">
 
-            <!-- ВЕРХНЯЯ ПАНЕЛЬ: Выбор автомобиля, кнопка Добавить и Удалить -->
-            <Border Background="#07343D" 
-                    CornerRadius="12" 
-                    Padding="12"
-                    BorderBrush="#144C57"
-                    BorderThickness="1">
-                <Grid ColumnDefinitions="*, Auto, Auto">
-                    <!-- Селектор машин -->
-                    <ComboBox Grid.Column="0" 
-                              ItemsSource="{Binding Vehicles}" 
-                              SelectedItem="{Binding SelectedVehicle}"
-                              HorizontalAlignment="Stretch"
-                              Margin="0,0,8,0">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate x:DataType="m:Vehicle">
-                                <TextBlock Text="{Binding Title}" Foreground="White" FontWeight="Medium" />
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
+                <!-- ВЕРХНЯЯ ПАНЕЛЬ: Выбор автомобиля, кнопки «Добавить» и «Удалить» -->
+                <Border Background="#07343D" 
+                        CornerRadius="12" 
+                        Padding="12"
+                        BorderBrush="#144C57"
+                        BorderThickness="1">
+                    <Grid ColumnDefinitions="*, Auto, Auto">
+                        <!-- Селектор машин -->
+                        <ComboBox Grid.Column="0" 
+                                  ItemsSource="{Binding Vehicles}" 
+                                  SelectedItem="{Binding SelectedVehicle}"
+                                  HorizontalAlignment="Stretch"
+                                  Margin="0,0,8,0">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="m:Vehicle">
+                                    <TextBlock Text="{Binding Title}" Foreground="White" FontWeight="Medium" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
 
-                    <!-- Кнопка «Добавить» авто -->
-                    <Button Grid.Column="1" 
-                            Content="Добавить"
-                            Command="{Binding ToggleAddVehicleCommand}"
-                            Background="#004D5A"
-                            Foreground="White"
-                            FontWeight="SemiBold"
-                            FontSize="13"
-                            Height="38"
-                            CornerRadius="8"
-                            Margin="0,0,6,0"
-                            VerticalContentAlignment="Center" />
-
-                    <!-- Кнопка «Удалить» авто -->
-                    <Button Grid.Column="2" 
-                            Content="Удалить"
-                            Command="{Binding DeleteCurrentVehicleCommand}"
-                            IsEnabled="{Binding CanDeleteVehicle}"
-                            Background="#C92A2A"
-                            Foreground="White"
-                            FontWeight="Medium"
-                            FontSize="12"
-                            Height="38"
-                            CornerRadius="8"
-                            VerticalContentAlignment="Center" />
-                </Grid>
-            </Border>
-
-            <!-- ФОРМА ДОБАВЛЕНИЯ НОВОГО АВТО (если открыта) -->
-            <Border Background="#07343D" 
-                    CornerRadius="12" 
-                    Padding="16"
-                    BorderBrush="#1A5E6B"
-                    BorderThickness="1"
-                    IsVisible="{Binding IsAddingVehicle}">
-                <StackPanel Spacing="10">
-                    <TextBlock Text="Новый автомобиль" FontSize="16" FontWeight="Bold" Foreground="White" />
-                    
-                    <TextBlock Text="{Binding VehicleErrorMessage}" Foreground="#DE3535" FontWeight="SemiBold" FontSize="13" />
-
-                    <!-- Марка и Модель (обе с подсказками) -->
-                    <Grid ColumnDefinitions="*, *">
-                        <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,5,0">
-                            <TextBlock Text="Марка *" Foreground="#7CA3AA" FontSize="12" />
-                            <AutoCompleteBox Text="{Binding NewBrand}" 
-                                             ItemsSource="{Binding BrandSuggestions}" 
-                                             FilterMode="ContainsOrdinal" 
-                                             PlaceholderText="Toyota, Lada, Kia..." />
-                        </StackPanel>
-                        <StackPanel Grid.Column="1" Spacing="4" Margin="5,0,0,0">
-                            <TextBlock Text="Модель *" Foreground="#7CA3AA" FontSize="12" />
-                            <AutoCompleteBox Text="{Binding NewModel}" 
-                                             ItemsSource="{Binding ModelSuggestions}" 
-                                             FilterMode="ContainsOrdinal" 
-                                             PlaceholderText="Vesta, Rio, Camry..." />
-                        </StackPanel>
-                    </Grid>
-
-                    <!-- Поколение и Год -->
-                    <Grid ColumnDefinitions="*, *">
-                        <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,5,0">
-                            <TextBlock Text="Поколение" Foreground="#7CA3AA" FontSize="12" />
-                            <AutoCompleteBox Text="{Binding NewGeneration}" 
-                                             ItemsSource="{Binding GenerationSuggestions}" 
-                                             FilterMode="ContainsOrdinal" 
-                                             PlaceholderText="I, II Рестайлинг..." />
-                        </StackPanel>
-                        <StackPanel Grid.Column="1" Spacing="4" Margin="5,0,0,0">
-                            <TextBlock Text="Год выпуска" Foreground="#7CA3AA" FontSize="12" />
-                            <NumericUpDown Value="{Binding NewYear}" Minimum="1950" Maximum="2035" FormatString="N0" HorizontalAlignment="Stretch" />
-                        </StackPanel>
-                    </Grid>
-
-                    <!-- Объем двигателя и Цвет -->
-                    <Grid ColumnDefinitions="*, *">
-                        <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,5,0">
-                            <TextBlock Text="Объем двигателя" Foreground="#7CA3AA" FontSize="12" />
-                            <TextBox Text="{Binding NewEngineVolume}" PlaceholderText="1.6, 2.0, 1.5T..." />
-                        </StackPanel>
-                        <StackPanel Grid.Column="1" Spacing="4" Margin="5,0,0,0">
-                            <TextBlock Text="Цвет" Foreground="#7CA3AA" FontSize="12" />
-                            <TextBox Text="{Binding NewColor}" PlaceholderText="Белый, Черный..." />
-                        </StackPanel>
-                    </Grid>
-
-                    <!-- Начальный пробег -->
-                    <StackPanel Spacing="4">
-                        <TextBlock Text="Текущий пробег (км)" Foreground="#7CA3AA" FontSize="12" />
-                        <NumericUpDown Value="{Binding NewVehicleMileage}" Minimum="0" FormatString="N0" HorizontalAlignment="Stretch" />
-                    </StackPanel>
-
-                    <!-- Кнопки формы авто -->
-                    <Grid ColumnDefinitions="*, *" Margin="0, 4, 0, 0">
-                        <Button Grid.Column="0" Content="Добавить автомобиль"
-                                Command="{Binding AddVehicleCommand}"
-                                Background="#0CA61E" Foreground="White"
-                                FontWeight="Bold" Height="38" CornerRadius="8"
-                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                                VerticalContentAlignment="Center" Margin="0,0,5,0" />
-
-                        <Button Grid.Column="1" Content="Отмена"
+                        <!-- Кнопка «Добавить» авто -->
+                        <Button Grid.Column="1" 
+                                Content="Добавить"
                                 Command="{Binding ToggleAddVehicleCommand}"
-                                Background="#002127" Foreground="#7CA3AA"
-                                FontWeight="Medium" Height="38" CornerRadius="8"
-                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                                VerticalContentAlignment="Center" Margin="5,0,0,0" />
+                                Background="#004D5A"
+                                Foreground="White"
+                                FontWeight="SemiBold"
+                                FontSize="13"
+                                Height="38"
+                                CornerRadius="8"
+                                Margin="0,0,6,0"
+                                VerticalContentAlignment="Center" />
+
+                        <!-- Кнопка «Удалить» авто -->
+                        <Button Grid.Column="2" 
+                                Content="Удалить"
+                                Command="{Binding DeleteCurrentVehicleCommand}"
+                                IsEnabled="{Binding CanDeleteVehicle}"
+                                Background="#9C1111"
+                                Foreground="White"
+                                FontWeight="Medium"
+                                FontSize="12"
+                                Height="38"
+                                CornerRadius="8"
+                                VerticalContentAlignment="Center" />
                     </Grid>
-                </StackPanel>
-            </Border>
+                </Border>
 
-            <!-- ШАПКА: Карточка выбранного авто -->
-            <Border Background="#07343D" 
-                    CornerRadius="14" 
-                    Padding="18"
-                    BorderBrush="#144C57"
-                    BorderThickness="1">
-                <StackPanel Spacing="10">
-                    <!-- ЧИСТОЕ НАЗВАНИЕ АВТО (без дублирования года и объема) -->
-                    <TextBlock Text="{Binding SelectedVehicle.Title}" FontSize="24" FontWeight="Bold" Foreground="White" />
-                    
-                    <!-- ВСЕ ХАРАКТЕРИСТИКИ ВМЕСТЕ (поколение, двигатель, год, цвет) -->
-                    <TextBlock Text="{Binding SelectedVehicle.SubDetails}" Foreground="#7CA3AA" FontSize="13" />
+                <!-- ШАПКА: Карточка выбранного авто -->
+                <Border Background="#07343D" 
+                        CornerRadius="14" 
+                        Padding="18"
+                        BorderBrush="#144C57"
+                        BorderThickness="1">
+                    <StackPanel Spacing="10">
+                        <!-- ЧИСТОЕ НАЗВАНИЕ АВТО (без дублирования года и объема) -->
+                        <TextBlock Text="{Binding SelectedVehicle.Title}" FontSize="24" FontWeight="Bold" Foreground="White" />
+                        
+                        <!-- ВСЕ ХАРАКТЕРИСТИКИ ВМЕСТЕ (поколение, двигатель, год, цвет) -->
+                        <TextBlock Text="{Binding SelectedVehicle.SubDetails}" Foreground="#7CA3AA" FontSize="13" />
 
-                    <!-- Пробег и расходы (светлый читаемый красный) -->
-                    <Grid ColumnDefinitions="*, Auto" Margin="0, 6, 0, 0">
-                        <StackPanel>
-                            <TextBlock Text="Текущий пробег" Foreground="#7CA3AA" FontSize="12" />
-                            <TextBlock Text="{Binding SelectedVehicle.CurrentMileage, StringFormat='{}{0:N0} км'}" 
-                                       FontSize="22" FontWeight="Black" Foreground="#0CA61E" />
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="1" HorizontalAlignment="Right">
-                            <TextBlock Text="Всего потрачено" Foreground="#7CA3AA" FontSize="12" HorizontalAlignment="Right" />
-                            <TextBlock Text="{Binding SelectedVehicle.TotalSpent, StringFormat='{}{0:N0} ₽'}" 
-                                       FontSize="22" FontWeight="Black" Foreground="#E03E3E" HorizontalAlignment="Right" />
-                        </StackPanel>
-                    </Grid>
-                </StackPanel>
-            </Border>
-
-            <!-- Кнопка «Добавить запись о замене» / «Отмена» -->
-            <Button Content="{Binding AddButtonText}"
-                    Command="{Binding ToggleAddFormCommand}"
-                    HorizontalAlignment="Stretch"
-                    HorizontalContentAlignment="Center"
-                    VerticalContentAlignment="Center"
-                    Background="#07343D"
-                    BorderBrush="#1E5662"
-                    BorderThickness="1"
-                    Foreground="White"
-                    FontWeight="SemiBold"
-                    FontSize="14"
-                    Height="44"
-                    CornerRadius="10" />
-
-            <!-- ФОРМА ДОБАВЛЕНИЯ ЗАПИСИ (если открыта) -->
-            <Border Background="#07343D" 
-                    CornerRadius="14" 
-                    Padding="18"
-                    BorderBrush="#1E5662"
-                    BorderThickness="1"
-                    IsVisible="{Binding IsAddingRecord}">
-                <StackPanel Spacing="12">
-                    <TextBlock Text="Новая запись о замене" FontSize="16" FontWeight="Bold" Foreground="White" />
-
-                    <TextBlock Text="{Binding RecordErrorMessage}" Foreground="#E03E3E" FontWeight="SemiBold" FontSize="13" />
-
-                    <!-- Название детали -->
-                    <StackPanel Spacing="4">
-                        <TextBlock Text="Что меняли *" Foreground="#7CA3AA" FontSize="12" />
-                        <TextBox Text="{Binding NewPartTitle}" PlaceholderText="Например: Свечи зажигания NGK" />
-                    </StackPanel>
-
-                    <!-- Пробег и Сервис в две колонки -->
-                    <Grid ColumnDefinitions="*, *" Margin="0, 2, 0, 0">
-                        <StackPanel Grid.Column="0" Spacing="4" Margin="0, 0, 5, 0">
-                            <TextBlock Text="Пробег (км)" Foreground="#7CA3AA" FontSize="12" />
-                            <NumericUpDown Value="{Binding NewMileage}" Minimum="0" FormatString="N0" HorizontalAlignment="Stretch" />
-                        </StackPanel>
-                        <StackPanel Grid.Column="1" Spacing="4" Margin="5, 0, 0, 0">
-                            <TextBlock Text="Где меняли" Foreground="#7CA3AA" FontSize="12" />
-                            <TextBox Text="{Binding NewServiceName}" PlaceholderText="Сам в гараже" />
-                        </StackPanel>
-                    </Grid>
-
-                    <!-- Цены: деталь и работа (без стрелочек) -->
-                    <Grid ColumnDefinitions="*, *" Margin="0, 2, 0, 0">
-                        <StackPanel Grid.Column="0" Spacing="4" Margin="0, 0, 5, 0">
-                            <TextBlock Text="Цена детали (₽)" Foreground="#7CA3AA" FontSize="12" />
-                            <NumericUpDown Value="{Binding NewPartCost}" Minimum="0" FormatString="N0" HorizontalAlignment="Stretch" />
-                        </StackPanel>
-                        <StackPanel Grid.Column="1" Spacing="4" Margin="5, 0, 0, 0">
-                            <TextBlock Text="Цена работы (₽)" Foreground="#7CA3AA" FontSize="12" />
-                            <NumericUpDown Value="{Binding NewLaborCost}" Minimum="0" FormatString="N0" HorizontalAlignment="Stretch" />
-                        </StackPanel>
-                    </Grid>
-
-                    <!-- Заметка -->
-                    <StackPanel Spacing="4">
-                        <TextBlock Text="Заметка / Артикул" Foreground="#7CA3AA" FontSize="12" />
-                        <TextBox Text="{Binding NewNotes}" PlaceholderText="Артикул детали, бренд, вязкость..." />
-                    </StackPanel>
-
-                    <!-- Кнопка «Сохранить запись» -->
-                    <Button Content="Сохранить запись"
-                            Command="{Binding SaveRecordCommand}"
-                            HorizontalAlignment="Stretch"
-                            HorizontalContentAlignment="Center"
-                            VerticalContentAlignment="Center"
-                            Background="#0CA61E"
-                            Foreground="White"
-                            FontWeight="Bold"
-                            FontSize="14"
-                            Height="42"
-                            CornerRadius="8"
-                            Margin="0, 4, 0, 0" />
-                </StackPanel>
-            </Border>
-
-            <!-- Заголовок истории -->
-            <TextBlock Text="История обслуживания" FontSize="17" FontWeight="Bold" Foreground="White" Margin="4, 4, 0, 0" />
-
-            <!-- Список записей выбранной машины -->
-            <ItemsControl ItemsSource="{Binding SelectedVehicle.Records}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="m:ServiceRecord">
-                        <!-- Карточка одной замены -->
-                        <Border Background="#07343D" 
-                                CornerRadius="12" 
-                                Margin="0, 0, 0, 10" 
-                                Padding="16"
-                                BorderBrush="#144C57"
-                                BorderThickness="1">
-                            <StackPanel Spacing="8">
-                                <!-- Название детали и общая стоимость -->
-                                <Grid ColumnDefinitions="*, Auto">
-                                    <TextBlock Text="{Binding PartTitle}" FontSize="15" FontWeight="SemiBold" Foreground="White" TextWrapping="Wrap" />
-                                    <TextBlock Grid.Column="1" Text="{Binding TotalCost, StringFormat='{}{0:N0} ₽'}" 
-                                               FontSize="16" FontWeight="Bold" Foreground="#0CA61E" Margin="8,0,0,0" />
-                                </Grid>
-
-                                <!-- Информация: Пробег, Умная дата (без года для текущего года!), Сервис -->
-                                <WrapPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding Mileage, StringFormat='{}{0:N0} км'}" Foreground="#7CA3AA" FontSize="13" />
-                                    <TextBlock Text="  ·  " Foreground="#3A6A73" FontSize="13" />
-                                    <TextBlock Text="{Binding DisplayDate}" Foreground="#7CA3AA" FontSize="13" />
-                                    <TextBlock Text="  ·  " Foreground="#3A6A73" FontSize="13" />
-                                    <TextBlock Text="{Binding ServiceName}" Foreground="#7CA3AA" FontSize="13" />
-                                </WrapPanel>
-
-                                <!-- Цены: деталь + работа -->
-                                <TextBlock Foreground="#4D7780" FontSize="12">
-                                    <TextBlock.Text>
-                                        <MultiBinding StringFormat="Деталь: {0:N0} ₽   Работа: {1:N0} ₽">
-                                            <Binding Path="PartCost" />
-                                            <Binding Path="LaborCost" />
-                                        </MultiBinding>
-                                    </TextBlock.Text>
-                                </TextBlock>
-
-                                <!-- Заметка (если есть) -->
-                                <TextBlock Text="{Binding Notes}" 
-                                           Foreground="#85ABB3" FontSize="12" FontStyle="Italic" TextWrapping="Wrap" />
+                        <!-- Пробег и расходы (светлый читаемый красный) -->
+                        <Grid ColumnDefinitions="*, Auto" Margin="0, 6, 0, 0">
+                            <StackPanel>
+                                <TextBlock Text="Текущий пробег" Foreground="#7CA3AA" FontSize="12" />
+                                <TextBlock Text="{Binding SelectedVehicle.CurrentMileage, StringFormat='{}{0:N0} км'}" 
+                                           FontSize="22" FontWeight="Black" Foreground="#0CA61E" />
                             </StackPanel>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
 
-        </StackPanel>
-    </ScrollViewer>
+                            <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                                <TextBlock Text="Всего потрачено" Foreground="#7CA3AA" FontSize="12" HorizontalAlignment="Right" />
+                                <TextBlock Text="{Binding SelectedVehicle.TotalSpent, StringFormat='{}{0:N0} ₽'}" 
+                                           FontSize="22" FontWeight="Black" Foreground="#E03E3E" HorizontalAlignment="Right" />
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Кнопка «Добавить запись о замене» -->
+                <Button Content="Добавить запись о замене"
+                        Command="{Binding ToggleAddFormCommand}"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"
+                        Background="#07343D"
+                        BorderBrush="#1E5662"
+                        BorderThickness="1"
+                        Foreground="White"
+                        FontWeight="SemiBold"
+                        FontSize="14"
+                        Height="44"
+                        CornerRadius="10" />
+
+                <!-- Заголовок истории обслуживания -->
+                <TextBlock Text="История обслуживания" FontSize="17" FontWeight="Bold" Foreground="White" Margin="4, 4, 0, 0" />
+
+                <!-- Список записей выбранной машины -->
+                <ItemsControl ItemsSource="{Binding SelectedVehicle.Records}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="m:ServiceRecord">
+                            <!-- Карточка одной замены -->
+                            <Border Background="#07343D" 
+                                    CornerRadius="12" 
+                                    Margin="0, 0, 0, 10" 
+                                    Padding="16"
+                                    BorderBrush="#144C57"
+                                    BorderThickness="1">
+                                <StackPanel Spacing="8">
+                                    <!-- Название детали и общая стоимость -->
+                                    <Grid ColumnDefinitions="*, Auto">
+                                        <TextBlock Text="{Binding PartTitle}" FontSize="15" FontWeight="SemiBold" Foreground="White" TextWrapping="Wrap" />
+                                        <TextBlock Grid.Column="1" Text="{Binding TotalCost, StringFormat='{}{0:N0} ₽'}" 
+                                                   FontSize="16" FontWeight="Bold" Foreground="#0CA61E" Margin="8,0,0,0" />
+                                    </Grid>
+
+                                    <!-- Информация: Пробег, Умная дата (без года для текущего года!), Сервис -->
+                                    <WrapPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding Mileage, StringFormat='{}{0:N0} км'}" Foreground="#7CA3AA" FontSize="13" />
+                                        <TextBlock Text="  ·  " Foreground="#3A6A73" FontSize="13" />
+                                        <TextBlock Text="{Binding DisplayDate}" Foreground="#7CA3AA" FontSize="13" />
+                                        <TextBlock Text="  ·  " Foreground="#3A6A73" FontSize="13" />
+                                        <TextBlock Text="{Binding ServiceName}" Foreground="#7CA3AA" FontSize="13" />
+                                    </WrapPanel>
+
+                                    <!-- Цены: деталь + работа -->
+                                    <TextBlock Foreground="#4D7780" FontSize="12">
+                                        <TextBlock.Text>
+                                            <MultiBinding StringFormat="Деталь: {0:N0} ₽   Работа: {1:N0} ₽">
+                                                <Binding Path="PartCost" />
+                                                <Binding Path="LaborCost" />
+                                            </MultiBinding>
+                                        </TextBlock.Text>
+                                    </TextBlock>
+
+                                    <!-- Заметка (если есть) -->
+                                    <TextBlock Text="{Binding Notes}" 
+                                               Foreground="#85ABB3" FontSize="12" FontStyle="Italic" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- СЛОЙ 1: Затемнение фона при открытии любой модальной формы -->
+        <Border Background="#B300080A"
+                IsVisible="{Binding IsAnyFormOpen}">
+            <!-- Клик по фону закрывает открытую форму -->
+            <Button Background="Transparent"
+                    BorderThickness="0"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    Command="{Binding CloseAllFormsCommand}">
+                <Button.Styles>
+                    <Style Selector="Button:pointerover /template/ ContentPresenter">
+                        <Setter Property="Background" Value="Transparent" />
+                    </Style>
+                    <Style Selector="Button:pressed /template/ ContentPresenter">
+                        <Setter Property="Background" Value="Transparent" />
+                    </Style>
+                </Button.Styles>
+            </Button>
+        </Border>
+
+        <!-- СЛОЙ 2: Модальные окна поверх затемнения -->
+        <ScrollViewer IsVisible="{Binding IsAnyFormOpen}"
+                      VerticalAlignment="Center"
+                      HorizontalAlignment="Center"
+                      MaxWidth="440"
+                      MaxHeight="780"
+                      Margin="16">
+            <Panel>
+                <!-- ФОРМА ДОБАВЛЕНИЯ НОВОГО АВТО -->
+                <Border Background="#07343D" 
+                        CornerRadius="14" 
+                        Padding="18"
+                        BorderBrush="#1A5E6B"
+                        BorderThickness="1"
+                        BoxShadow="0 8 32 #80000000"
+                        IsVisible="{Binding IsAddingVehicle}">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="Новый автомобиль" FontSize="18" FontWeight="Bold" Foreground="White" />
+                        
+                        <TextBlock Text="{Binding VehicleErrorMessage}" Foreground="#E03E3E" FontWeight="SemiBold" FontSize="13" />
+
+                        <!-- Марка и Модель (обе с подсказками Avito) -->
+                        <Grid ColumnDefinitions="*, *">
+                            <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,5,0">
+                                <TextBlock Text="Марка *" Foreground="#7CA3AA" FontSize="12" />
+                                <AutoCompleteBox Text="{Binding NewBrand}" 
+                                                 ItemsSource="{Binding BrandSuggestions}" 
+                                                 FilterMode="Contains"
+                                                 MinimumPrefixLength="0"
+                                                 PlaceholderText="Toyota, Lada, Kia..." />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Spacing="4" Margin="5,0,0,0">
+                                <TextBlock Text="Модель *" Foreground="#7CA3AA" FontSize="12" />
+                                <AutoCompleteBox Text="{Binding NewModel}" 
+                                                 ItemsSource="{Binding ModelSuggestions}" 
+                                                 FilterMode="Contains"
+                                                 MinimumPrefixLength="0"
+                                                 PlaceholderText="Vesta, Rio, Camry..." />
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Поколение и Год -->
+                        <Grid ColumnDefinitions="*, *">
+                            <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,5,0">
+                                <TextBlock Text="Поколение" Foreground="#7CA3AA" FontSize="12" />
+                                <AutoCompleteBox Text="{Binding NewGeneration}" 
+                                                 ItemsSource="{Binding GenerationSuggestions}" 
+                                                 FilterMode="Contains"
+                                                 MinimumPrefixLength="0"
+                                                 PlaceholderText="I, II Рестайлинг..." />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Spacing="4" Margin="5,0,0,0">
+                                <TextBlock Text="Год выпуска" Foreground="#7CA3AA" FontSize="12" />
+                                <NumericUpDown Value="{Binding NewYear}" Minimum="1950" Maximum="2035" FormatString="N0" HorizontalAlignment="Stretch" />
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Объем двигателя и Цвет -->
+                        <Grid ColumnDefinitions="*, *">
+                            <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,5,0">
+                                <TextBlock Text="Объем двигателя" Foreground="#7CA3AA" FontSize="12" />
+                                <TextBox Text="{Binding NewEngineVolume}" PlaceholderText="1.6, 2.0, 1.5T..." />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Spacing="4" Margin="5,0,0,0">
+                                <TextBlock Text="Цвет" Foreground="#7CA3AA" FontSize="12" />
+                                <TextBox Text="{Binding NewColor}" PlaceholderText="Белый, Черный..." />
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Начальный пробег -->
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Текущий пробег (км)" Foreground="#7CA3AA" FontSize="12" />
+                            <NumericUpDown Value="{Binding NewVehicleMileage}" Minimum="0" FormatString="N0" HorizontalAlignment="Stretch" />
+                        </StackPanel>
+
+                        <!-- Кнопки формы авто: Добавить и Отмена -->
+                        <Grid ColumnDefinitions="*, *" Margin="0, 6, 0, 0">
+                            <Button Grid.Column="0" Content="Добавить"
+                                    Command="{Binding AddVehicleCommand}"
+                                    Background="#0CA61E" Foreground="White"
+                                    FontWeight="Bold" Height="40" CornerRadius="8"
+                                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center" Margin="0,0,5,0" />
+
+                            <Button Grid.Column="1" Content="Отмена"
+                                    Command="{Binding CloseAllFormsCommand}"
+                                    Background="#002127" Foreground="#7CA3AA"
+                                    FontWeight="Medium" Height="40" CornerRadius="8"
+                                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center" Margin="5,0,0,0" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- ФОРМА ДОБАВЛЕНИЯ ЗАПИСИ О ЗАМЕНЕ -->
+                <Border Background="#07343D" 
+                        CornerRadius="14" 
+                        Padding="18"
+                        BorderBrush="#1E5662"
+                        BorderThickness="1"
+                        BoxShadow="0 8 32 #80000000"
+                        IsVisible="{Binding IsAddingRecord}">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="Новая запись о замене" FontSize="18" FontWeight="Bold" Foreground="White" />
+
+                        <TextBlock Text="{Binding RecordErrorMessage}" Foreground="#E03E3E" FontWeight="SemiBold" FontSize="13" />
+
+                        <!-- Название детали -->
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Что меняли *" Foreground="#7CA3AA" FontSize="12" />
+                            <TextBox Text="{Binding NewPartTitle}" PlaceholderText="Например: Свечи зажигания NGK" />
+                        </StackPanel>
+
+                        <!-- Пробег и Сервис в две колонки -->
+                        <Grid ColumnDefinitions="*, *" Margin="0, 2, 0, 0">
+                            <StackPanel Grid.Column="0" Spacing="4" Margin="0, 0, 5, 0">
+                                <TextBlock Text="Пробег (км)" Foreground="#7CA3AA" FontSize="12" />
+                                <NumericUpDown Value="{Binding NewMileage}" Minimum="0" FormatString="N0" HorizontalAlignment="Stretch" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Spacing="4" Margin="5, 0, 0, 0">
+                                <TextBlock Text="Где меняли" Foreground="#7CA3AA" FontSize="12" />
+                                <TextBox Text="{Binding NewServiceName}" PlaceholderText="Сам в гараже" />
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Цены: деталь и работа (без стрелочек) -->
+                        <Grid ColumnDefinitions="*, *" Margin="0, 2, 0, 0">
+                            <StackPanel Grid.Column="0" Spacing="4" Margin="0, 0, 5, 0">
+                                <TextBlock Text="Цена детали (₽)" Foreground="#7CA3AA" FontSize="12" />
+                                <NumericUpDown Value="{Binding NewPartCost}" Minimum="0" FormatString="N0" HorizontalAlignment="Stretch" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Spacing="4" Margin="5, 0, 0, 0">
+                                <TextBlock Text="Цена работы (₽)" Foreground="#7CA3AA" FontSize="12" />
+                                <NumericUpDown Value="{Binding NewLaborCost}" Minimum="0" FormatString="N0" HorizontalAlignment="Stretch" />
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Заметка -->
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Заметка / Артикул" Foreground="#7CA3AA" FontSize="12" />
+                            <TextBox Text="{Binding NewNotes}" PlaceholderText="Артикул детали, бренд, вязкость..." />
+                        </StackPanel>
+
+                        <!-- Кнопки формы записи: Сохранить и Отмена -->
+                        <Grid ColumnDefinitions="*, *" Margin="0, 6, 0, 0">
+                            <Button Grid.Column="0" Content="Сохранить запись"
+                                    Command="{Binding SaveRecordCommand}"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    Background="#0CA61E"
+                                    Foreground="White"
+                                    FontWeight="Bold"
+                                    FontSize="14"
+                                    Height="40"
+                                    CornerRadius="8"
+                                    Margin="0, 0, 5, 0" />
+
+                            <Button Grid.Column="1" Content="Отмена"
+                                    Command="{Binding CloseAllFormsCommand}"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    Background="#002127"
+                                    Foreground="#7CA3AA"
+                                    FontWeight="Medium"
+                                    FontSize="14"
+                                    Height="40"
+                                    CornerRadius="8"
+                                    Margin="5, 0, 0, 0" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </Panel>
+        </ScrollViewer>
+    </Grid>
 </Window>
