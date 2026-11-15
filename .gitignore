@@ -1,0 +1,26 @@
+## Visual Studio временные файлы
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Результаты сборки C# (.NET)
+[Bb]in/
+[Oo]bj/
+build/
+
+## Локальные базы данных (чтобы не затереть базу другого пользователя)
+*.db
+*.sqlite
+*.sqlite3
+*.db-shm
+*.db-wal
+
+## Логи и дампы аварий
+*.log
+*.crash
+
+## Операционные системы
+.DS_Store
+Thumbs.db

@@ -1,0 +1,82 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:AutoCareApp.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="450" d:DesignHeight="700"
+        Width="450" Height="750"
+        x:Class="AutoCareApp.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Title="Журнал обслуживания авто"
+        Background="#0F111A">
+
+    <ScrollViewer Margin="16">
+        <StackPanel Spacing="16">
+
+            <!-- Шапка: Карточка Автомобиля -->
+            <Border Background="#1A1D2E" CornerRadius="16" Padding="20">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="{Binding CarName}" FontSize="24" FontWeight="Bold" Foreground="White" />
+
+                    <Grid ColumnDefinitions="*, Auto">
+                        <StackPanel>
+                            <TextBlock Text="Текущий пробег" Foreground="#8A90A6" FontSize="12" />
+                            <TextBlock Text="{Binding CurrentMileage, StringFormat='{}{0:N0} км'}" 
+                                       FontSize="20" FontWeight="SemiBold" Foreground="#4EBA6F" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                            <TextBlock Text="Всего потрачено" Foreground="#8A90A6" FontSize="12" HorizontalAlignment="Right" />
+                            <TextBlock Text="{Binding TotalSpent, StringFormat='{}{0:N0} ₽'}" 
+                                       FontSize="20" FontWeight="Bold" Foreground="#FF6B6B" HorizontalAlignment="Right" />
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Заголовок истории -->
+            <TextBlock Text="История обслуживания" FontSize="18" FontWeight="Bold" Foreground="White" Margin="4, 8, 0, 0" />
+
+            <!-- Список записей (ItemsControl) -->
+            <ItemsControl ItemsSource="{Binding Records}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <!-- Карточка одной замены -->
+                        <Border Background="#1A1D2E" CornerRadius="12" Margin="0, 0, 0, 12" Padding="16">
+                            <StackPanel Spacing="8">
+                                <!-- Название детали и общая стоимость -->
+                                <Grid ColumnDefinitions="*, Auto">
+                                    <TextBlock Text="{Binding PartTitle}" FontSize="16" FontWeight="SemiBold" Foreground="White" TextWrapping="Wrap" />
+                                    <TextBlock Grid.Column="1" Text="{Binding TotalCost, StringFormat='{}{0:N0} ₽'}" 
+                                               FontSize="16" FontWeight="Bold" Foreground="#4EBA6F" Margin="8,0,0,0" />
+                                </Grid>
+
+                                <!-- Информация: Пробег, Дата, Сервис -->
+                                <WrapPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Mileage, StringFormat='{}📍 {0:N0} км  '}" Foreground="#A0A5BD" FontSize="13" />
+                                    <TextBlock Text="{Binding Date, StringFormat='{}📅 {0:dd.MM.yyyy}  '}" Foreground="#A0A5BD" FontSize="13" />
+                                    <TextBlock Text="{Binding ServiceName, StringFormat='{}🔧 {0}'}" Foreground="#A0A5BD" FontSize="13" />
+                                </WrapPanel>
+
+                                <!-- Цены: деталь + работа -->
+                                <TextBlock Foreground="#6C7293" FontSize="12">
+                                    <TextBlock.Text>
+                                        <MultiBinding StringFormat="Деталь: {0:N0} ₽  |  Работа: {1:N0} ₽">
+                                            <Binding Path="PartCost" />
+                                            <Binding Path="LaborCost" />
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
+
+                                <!-- Заметка (если есть) -->
+                                <TextBlock Text="{Binding Notes, StringFormat='{}💬 {0}'}" 
+                                           Foreground="#8A90A6" FontSize="12" FontStyle="Italic" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+        </StackPanel>
+    </ScrollViewer>
+</Window>
