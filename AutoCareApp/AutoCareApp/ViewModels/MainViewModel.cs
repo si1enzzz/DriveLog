@@ -14,6 +14,10 @@ public partial class MainViewModel : ViewModelBase
     // Список марок для автоподстановки
     public IReadOnlyList<string> BrandSuggestions => CarCatalogService.PopularBrands;
 
+    // Динамические списки моделей и поколений (обновляются при вводе марки)
+    public ObservableCollection<string> ModelSuggestions { get; } = new();
+    public ObservableCollection<string> GenerationSuggestions { get; } = new();
+
     // Список всех автомобилей
     public ObservableCollection<Vehicle> Vehicles { get; } = new();
 
@@ -86,36 +90,38 @@ public partial class MainViewModel : ViewModelBase
 
     public MainViewModel()
     {
-        // Создаем стартовый автомобиль с подробными параметрами
+        // Создаем стартовый автомобиль (как на скриншоте пользователя)
         var defaultCar = new Vehicle
         {
-            Brand = "Lada",
-            Model = "Vesta",
-            Generation = "I",
+            Brand = "Hyundai",
+            Model = "Elantra",
+            Generation = "VI (AD)",
             Year = 2018,
-            EngineVolume = "1.6",
-            Color = "Тёмно-серый",
-            CurrentMileage = 125000
+            EngineVolume = "2.0",
+            Color = "Красный",
+            CurrentMileage = 85000
         };
 
+        // Запись в текущем году (будет отображаться только день и месяц: "1 ноября")
         defaultCar.Records.Add(new ServiceRecord
         {
             PartTitle = "Моторное масло 5W-40 + Фильтр",
             Category = "ТО",
             Date = DateTime.Today.AddDays(-14),
-            Mileage = 120000,
+            Mileage = 82000,
             PartCost = 3800m,
             LaborCost = 1200m,
             ServiceName = "СТО Вираж",
             Notes = "Артикул фильтра MANN W914/2"
         });
 
+        // Запись в прошлом году (будет отображаться с годом: "15 сентября 2025 г.")
         defaultCar.Records.Add(new ServiceRecord
         {
             PartTitle = "Передние тормозные колодки",
             Category = "Тормоза",
-            Date = DateTime.Today.AddMonths(-2),
-            Mileage = 115000,
+            Date = new DateTime(DateTime.Today.Year - 1, 9, 15),
+            Mileage = 75000,
             PartCost = 2400m,
             LaborCost = 0m,
             ServiceName = "Сам в гараже",
@@ -124,6 +130,31 @@ public partial class MainViewModel : ViewModelBase
 
         Vehicles.Add(defaultCar);
         SelectedVehicle = defaultCar;
+    }
+
+    // Реакция на изменение марки: обновляем доступные модели
+    partial void OnNewBrandChanged(string value)
+    {
+        ModelSuggestions.Clear();
+        GenerationSuggestions.Clear();
+
+        var models = CarCatalogService.GetModelsForBrand(value);
+        foreach (var m in models)
+        {
+            ModelSuggestions.Add(m);
+        }
+    }
+
+    // Реакция на изменение модели: обновляем поколения
+    partial void OnNewModelChanged(string value)
+    {
+        GenerationSuggestions.Clear();
+
+        var gens = CarCatalogService.GetGenerationsForModel(NewBrand, value);
+        foreach (var g in gens)
+        {
+            GenerationSuggestions.Add(g);
+        }
     }
 
     partial void OnSelectedVehicleChanged(Vehicle? value)
@@ -149,6 +180,8 @@ public partial class MainViewModel : ViewModelBase
         NewEngineVolume = string.Empty;
         NewColor = string.Empty;
         NewVehicleMileage = 0;
+        ModelSuggestions.Clear();
+        GenerationSuggestions.Clear();
     }
 
     [RelayCommand]
