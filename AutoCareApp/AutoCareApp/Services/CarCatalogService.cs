@@ -1,0 +1,73 @@
+using System;
+using System.Collections.Generic;
+
+namespace AutoCareApp.Services;
+
+public static class CarCatalogService
+{
+    // Список популярных марок автомобилей для автоподстановки
+    public static readonly IReadOnlyList<string> PopularBrands = new List<string>
+    {
+        "Lada (ВАЗ)",
+        "Toyota",
+        "Kia",
+        "Hyundai",
+        "Volkswagen",
+        "Renault",
+        "Nissan",
+        "Skoda",
+        "Chevrolet",
+        "Ford",
+        "Haval",
+        "Geely",
+        "Chery",
+        "Changan",
+        "Omoda",
+        "Exeed",
+        "BMW",
+        "Mercedes-Benz",
+        "Audi",
+        "Mitsubishi",
+        "Mazda",
+        "Honda",
+        "Subaru",
+        "Suzuki",
+        "Lexus",
+        "Volvo",
+        "Peugeot",
+        "Citroen",
+        "Opel",
+        "УАЗ",
+        "ГАЗ",
+        "Москвич",
+        "Datsun",
+        "Infiniti",
+        "Land Rover",
+        "Jeep",
+        "Porsche",
+        "Voyah",
+        "Li Auto (LiXiang)",
+        "Zeekr",
+        "Tank",
+        "Jaecoo",
+        "Jetour",
+        "FAW",
+        "GAC",
+        "BYD",
+        "Belgee",
+        "Sollers",
+        "Acura",
+        "Alfa Romeo",
+        "Cadillac",
+        "Chrysler",
+        "Dodge",
+        "Fiat",
+        "Genesis",
+        "Great Wall",
+        "Isuzu",
+        "Jaguar",
+        "MINI",
+        "SEAT",
+        "SsangYong"
+    };
+}

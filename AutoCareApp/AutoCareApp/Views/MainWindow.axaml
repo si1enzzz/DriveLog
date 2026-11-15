@@ -2,64 +2,66 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:AutoCareApp.ViewModels"
         xmlns:m="using:AutoCareApp.Models"
-        xmlns:lg="using:LiquidGlassAvaloniaUI"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="460" d:DesignHeight="850"
-        Width="470" Height="860"
+        mc:Ignorable="d" d:DesignWidth="470" d:DesignHeight="880"
+        Width="480" Height="900"
         x:Class="AutoCareApp.Views.MainWindow"
         x:DataType="vm:MainViewModel"
         Title="Журнал обслуживания авто"
         Background="#001114">
 
-    <!-- Глобальные стили контролов под Liquid Glass тему -->
+    <!-- Глобальные аккуратные стили без резких углов -->
     <Window.Styles>
-        <!-- Поля ввода без резких углов -->
         <Style Selector="TextBox">
-            <Setter Property="CornerRadius" Value="10" />
-            <Setter Property="Background" Value="#CC001D22" />
-            <Setter Property="BorderBrush" Value="#227AA6AD" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Background" Value="#002127" />
+            <Setter Property="BorderBrush" Value="#174A54" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Foreground" Value="White" />
-            <Setter Property="Height" Value="40" />
+            <Setter Property="Height" Value="38" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
-        
-        <!-- Числовые поля: УБРАНЫ стрелочки (ShowButtonSpinner=False) -->
-        <Style Selector="NumericUpDown">
-            <Setter Property="CornerRadius" Value="10" />
-            <Setter Property="Background" Value="#CC001D22" />
-            <Setter Property="BorderBrush" Value="#227AA6AD" />
+
+        <Style Selector="AutoCompleteBox">
+            <Setter Property="Background" Value="#002127" />
+            <Setter Property="BorderBrush" Value="#174A54" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Foreground" Value="White" />
-            <Setter Property="Height" Value="40" />
+            <Setter Property="Height" Value="38" />
+        </Style>
+
+        <Style Selector="NumericUpDown">
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Background" Value="#002127" />
+            <Setter Property="BorderBrush" Value="#174A54" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Height" Value="38" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="ShowButtonSpinner" Value="False" />
         </Style>
 
-        <!-- Выпадающий список выбора авто -->
         <Style Selector="ComboBox">
-            <Setter Property="CornerRadius" Value="10" />
-            <Setter Property="Background" Value="#CC001D22" />
-            <Setter Property="BorderBrush" Value="#227AA6AD" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Background" Value="#002127" />
+            <Setter Property="BorderBrush" Value="#174A54" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Foreground" Value="White" />
-            <Setter Property="Height" Value="40" />
+            <Setter Property="Height" Value="38" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
     </Window.Styles>
 
     <ScrollViewer Margin="16">
-        <StackPanel Spacing="16">
+        <StackPanel Spacing="14">
 
             <!-- ВЕРХНЯЯ ПАНЕЛЬ: Выбор автомобиля, добавление и удаление -->
-            <lg:LiquidGlassSurface CornerRadius="16"
-                                   SurfaceColor="#07343D"
-                                   BackdropOpacity="0.85"
-                                   RefractionAmount="12"
-                                   Vibrancy="1.15"
-                                   HighlightOpacity="0.5"
-                                   Padding="14">
+            <Border Background="#07343D" 
+                    CornerRadius="12" 
+                    Padding="12"
+                    BorderBrush="#144C57"
+                    BorderThickness="1">
                 <Grid ColumnDefinitions="*, Auto, Auto">
                     <!-- Селектор машин -->
                     <ComboBox Grid.Column="0" 
@@ -69,7 +71,7 @@
                               Margin="0,0,8,0">
                         <ComboBox.ItemTemplate>
                             <DataTemplate x:DataType="m:Vehicle">
-                                <TextBlock Text="{Binding Name}" Foreground="White" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding DisplayName}" Foreground="White" FontWeight="Medium" />
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
@@ -80,163 +82,199 @@
                             Command="{Binding ToggleAddVehicleCommand}"
                             Background="#004D5A"
                             Foreground="White"
-                            FontWeight="Bold"
+                            FontWeight="SemiBold"
                             FontSize="13"
-                            Height="40"
-                            CornerRadius="10"
+                            Height="38"
+                            CornerRadius="8"
                             Margin="0,0,6,0"
                             VerticalContentAlignment="Center" />
 
-                    <!-- Кнопка «Удалить авто» -->
+                    <!-- Кнопка «Удалить» -->
                     <Button Grid.Column="2" 
                             Content="Удалить"
                             Command="{Binding DeleteCurrentVehicleCommand}"
                             IsEnabled="{Binding CanDeleteVehicle}"
-                            Background="#820E0E"
+                            Background="#9C1111"
                             Foreground="White"
-                            FontWeight="SemiBold"
+                            FontWeight="Medium"
                             FontSize="12"
-                            Height="40"
-                            CornerRadius="10"
+                            Height="38"
+                            CornerRadius="8"
                             VerticalContentAlignment="Center" />
                 </Grid>
-            </lg:LiquidGlassSurface>
+            </Border>
 
             <!-- ФОРМА ДОБАВЛЕНИЯ НОВОГО АВТО (если открыта) -->
-            <lg:LiquidGlassSurface CornerRadius="16"
-                                   SurfaceColor="#07343D"
-                                   BackdropOpacity="0.9"
-                                   RefractionAmount="14"
-                                   HighlightOpacity="0.6"
-                                   Padding="18"
-                                   IsVisible="{Binding IsAddingVehicle}">
-                <StackPanel Spacing="12">
-                    <TextBlock Text="Добавление нового автомобиля" FontSize="16" FontWeight="Bold" Foreground="White" />
+            <Border Background="#07343D" 
+                    CornerRadius="12" 
+                    Padding="16"
+                    BorderBrush="#1A5E6B"
+                    BorderThickness="1"
+                    IsVisible="{Binding IsAddingVehicle}">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="Новый автомобиль" FontSize="16" FontWeight="Bold" Foreground="White" />
                     
-                    <TextBlock Text="{Binding VehicleErrorMessage}" Foreground="#820E0E" FontWeight="Bold" FontSize="13" />
+                    <TextBlock Text="{Binding VehicleErrorMessage}" Foreground="#9C1111" FontWeight="SemiBold" FontSize="13" />
 
-                    <StackPanel Spacing="4">
-                        <TextBlock Text="Марка и модель *" Foreground="#6C9199" FontSize="12" />
-                        <TextBox Text="{Binding NewVehicleName}" PlaceholderText="Например: Kia Rio или Haval Jolion" />
-                    </StackPanel>
+                    <!-- Марка с автоподстановкой и Модель -->
+                    <Grid ColumnDefinitions="*, *">
+                        <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,5,0">
+                            <TextBlock Text="Марка *" Foreground="#7CA3AA" FontSize="12" />
+                            <AutoCompleteBox Text="{Binding NewBrand}" 
+                                             ItemsSource="{Binding BrandSuggestions}" 
+                                             FilterMode="ContainsOrdinal" 
+                                             PlaceholderText="Lada, Toyota, BMW..." />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="4" Margin="5,0,0,0">
+                            <TextBlock Text="Модель *" Foreground="#7CA3AA" FontSize="12" />
+                            <TextBox Text="{Binding NewModel}" PlaceholderText="Vesta, Rio, Camry..." />
+                        </StackPanel>
+                    </Grid>
 
+                    <!-- Поколение и Год -->
+                    <Grid ColumnDefinitions="*, *">
+                        <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,5,0">
+                            <TextBlock Text="Поколение" Foreground="#7CA3AA" FontSize="12" />
+                            <TextBox Text="{Binding NewGeneration}" PlaceholderText="I, II Рестайлинг..." />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="4" Margin="5,0,0,0">
+                            <TextBlock Text="Год выпуска" Foreground="#7CA3AA" FontSize="12" />
+                            <NumericUpDown Value="{Binding NewYear}" Minimum="1950" Maximum="2035" FormatString="N0" HorizontalAlignment="Stretch" />
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Объем двигателя и Цвет -->
+                    <Grid ColumnDefinitions="*, *">
+                        <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,5,0">
+                            <TextBlock Text="Объем двигателя" Foreground="#7CA3AA" FontSize="12" />
+                            <TextBox Text="{Binding NewEngineVolume}" PlaceholderText="1.6, 2.0, 1.5T..." />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="4" Margin="5,0,0,0">
+                            <TextBlock Text="Цвет" Foreground="#7CA3AA" FontSize="12" />
+                            <TextBox Text="{Binding NewColor}" PlaceholderText="Белый, Черный..." />
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Начальный пробег -->
                     <StackPanel Spacing="4">
-                        <TextBlock Text="Начальный пробег (км)" Foreground="#6C9199" FontSize="12" />
+                        <TextBlock Text="Текущий пробег (км)" Foreground="#7CA3AA" FontSize="12" />
                         <NumericUpDown Value="{Binding NewVehicleMileage}" Minimum="0" FormatString="N0" HorizontalAlignment="Stretch" />
                     </StackPanel>
 
+                    <!-- Кнопки формы авто -->
                     <Grid ColumnDefinitions="*, *" Margin="0, 4, 0, 0">
-                        <Button Grid.Column="0" Content="✓ Добавить авто"
+                        <Button Grid.Column="0" Content="Добавить автомобиль"
                                 Command="{Binding AddVehicleCommand}"
                                 Background="#0CA61E" Foreground="White"
-                                FontWeight="Bold" Height="40" CornerRadius="10"
+                                FontWeight="Bold" Height="38" CornerRadius="8"
                                 HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                                VerticalContentAlignment="Center" Margin="0,0,6,0" />
+                                VerticalContentAlignment="Center" Margin="0,0,5,0" />
 
                         <Button Grid.Column="1" Content="Отмена"
                                 Command="{Binding ToggleAddVehicleCommand}"
-                                Background="#002D35" Foreground="#6C9199"
-                                FontWeight="SemiBold" Height="40" CornerRadius="10"
+                                Background="#002127" Foreground="#7CA3AA"
+                                FontWeight="Medium" Height="38" CornerRadius="8"
                                 HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                                VerticalContentAlignment="Center" Margin="6,0,0,0" />
+                                VerticalContentAlignment="Center" Margin="5,0,0,0" />
                     </Grid>
                 </StackPanel>
-            </lg:LiquidGlassSurface>
+            </Border>
 
-            <!-- КАРТОЧКА ВЫБРАННОГО АВТО (Настоящий LiquidGlass) -->
-            <lg:LiquidGlassSurface CornerRadius="18" 
-                                   SurfaceColor="#07343D"
-                                   BackdropOpacity="0.88"
-                                   RefractionAmount="15"
-                                   Vibrancy="1.2"
-                                   HighlightOpacity="0.65"
-                                   Padding="22">
-                <StackPanel Spacing="14">
-                    <TextBlock Text="{Binding SelectedVehicle.Name}" FontSize="24" FontWeight="Bold" Foreground="White" />
+            <!-- ШАПКА: Карточка выбранного авто -->
+            <Border Background="#07343D" 
+                    CornerRadius="14" 
+                    Padding="18"
+                    BorderBrush="#144C57"
+                    BorderThickness="1">
+                <StackPanel Spacing="10">
+                    <!-- Название авто -->
+                    <TextBlock Text="{Binding SelectedVehicle.DisplayName}" FontSize="22" FontWeight="Bold" Foreground="White" />
+                    
+                    <!-- Доп параметры (поколение, двигатель, цвет) -->
+                    <TextBlock Text="{Binding SelectedVehicle.SubDetails}" Foreground="#7CA3AA" FontSize="12" />
 
-                    <Grid ColumnDefinitions="*, Auto">
+                    <!-- Пробег и расходы -->
+                    <Grid ColumnDefinitions="*, Auto" Margin="0, 6, 0, 0">
                         <StackPanel>
-                            <TextBlock Text="Текущий пробег" Foreground="#6C9199" FontSize="12" />
+                            <TextBlock Text="Текущий пробег" Foreground="#7CA3AA" FontSize="12" />
                             <TextBlock Text="{Binding SelectedVehicle.CurrentMileage, StringFormat='{}{0:N0} км'}" 
-                                       FontSize="22" FontWeight="Black" Foreground="#0CA61E" />
+                                       FontSize="20" FontWeight="Black" Foreground="#0CA61E" />
                         </StackPanel>
 
                         <StackPanel Grid.Column="1" HorizontalAlignment="Right">
-                            <TextBlock Text="Всего потрачено" Foreground="#6C9199" FontSize="12" HorizontalAlignment="Right" />
+                            <TextBlock Text="Всего потрачено" Foreground="#7CA3AA" FontSize="12" HorizontalAlignment="Right" />
                             <TextBlock Text="{Binding SelectedVehicle.TotalSpent, StringFormat='{}{0:N0} ₽'}" 
-                                       FontSize="22" FontWeight="Black" Foreground="#820E0E" HorizontalAlignment="Right" />
+                                       FontSize="20" FontWeight="Black" Foreground="#9C1111" HorizontalAlignment="Right" />
                         </StackPanel>
                     </Grid>
                 </StackPanel>
-            </lg:LiquidGlassSurface>
+            </Border>
 
-            <!-- Кнопка «+ Добавить запись о замене» -->
+            <!-- Кнопка «Добавить запись о замене» / «Отмена» -->
             <Button Content="{Binding AddButtonText}"
                     Command="{Binding ToggleAddFormCommand}"
                     HorizontalAlignment="Stretch"
                     HorizontalContentAlignment="Center"
                     VerticalContentAlignment="Center"
                     Background="#07343D"
-                    BorderBrush="#336C9199"
+                    BorderBrush="#1E5662"
                     BorderThickness="1"
                     Foreground="White"
                     FontWeight="SemiBold"
-                    FontSize="15"
-                    Height="48"
-                    CornerRadius="14" />
+                    FontSize="14"
+                    Height="44"
+                    CornerRadius="10" />
 
-            <!-- ФОРМА ДОБАВЛЕНИЯ ЗАПИСИ (Liquid Glass) -->
-            <lg:LiquidGlassSurface CornerRadius="18" 
-                                   SurfaceColor="#07343D"
-                                   BackdropOpacity="0.92"
-                                   RefractionAmount="14"
-                                   HighlightOpacity="0.7"
-                                   Padding="20" 
-                                   IsVisible="{Binding IsAddingRecord}">
-                <StackPanel Spacing="14">
-                    <TextBlock Text="Новая запись о замене" FontSize="18" FontWeight="Bold" Foreground="White" />
+            <!-- ФОРМА ДОБАВЛЕНИЯ ЗАПИСИ (если открыта) -->
+            <Border Background="#07343D" 
+                    CornerRadius="14" 
+                    Padding="18"
+                    BorderBrush="#1E5662"
+                    BorderThickness="1"
+                    IsVisible="{Binding IsAddingRecord}">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Новая запись о замене" FontSize="16" FontWeight="Bold" Foreground="White" />
 
-                    <!-- Сообщение об ошибке валидации -->
-                    <TextBlock Text="{Binding RecordErrorMessage}" Foreground="#820E0E" FontWeight="Bold" FontSize="13" />
+                    <TextBlock Text="{Binding RecordErrorMessage}" Foreground="#9C1111" FontWeight="SemiBold" FontSize="13" />
 
                     <!-- Название детали -->
-                    <StackPanel Spacing="5">
-                        <TextBlock Text="Что меняли *" Foreground="#6C9199" FontSize="12" />
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Что меняли *" Foreground="#7CA3AA" FontSize="12" />
                         <TextBox Text="{Binding NewPartTitle}" PlaceholderText="Например: Свечи зажигания NGK" />
                     </StackPanel>
 
                     <!-- Пробег и Сервис в две колонки -->
                     <Grid ColumnDefinitions="*, *" Margin="0, 2, 0, 0">
-                        <StackPanel Grid.Column="0" Spacing="5" Margin="0, 0, 6, 0">
-                            <TextBlock Text="Пробег (км)" Foreground="#6C9199" FontSize="12" />
+                        <StackPanel Grid.Column="0" Spacing="4" Margin="0, 0, 5, 0">
+                            <TextBlock Text="Пробег (км)" Foreground="#7CA3AA" FontSize="12" />
                             <NumericUpDown Value="{Binding NewMileage}" Minimum="0" FormatString="N0" HorizontalAlignment="Stretch" />
                         </StackPanel>
-                        <StackPanel Grid.Column="1" Spacing="5" Margin="6, 0, 0, 0">
-                            <TextBlock Text="Где меняли" Foreground="#6C9199" FontSize="12" />
+                        <StackPanel Grid.Column="1" Spacing="4" Margin="5, 0, 0, 0">
+                            <TextBlock Text="Где меняли" Foreground="#7CA3AA" FontSize="12" />
                             <TextBox Text="{Binding NewServiceName}" PlaceholderText="Сам в гараже" />
                         </StackPanel>
                     </Grid>
 
                     <!-- Цены: деталь и работа (без стрелочек) -->
                     <Grid ColumnDefinitions="*, *" Margin="0, 2, 0, 0">
-                        <StackPanel Grid.Column="0" Spacing="5" Margin="0, 0, 6, 0">
-                            <TextBlock Text="Цена детали (₽)" Foreground="#6C9199" FontSize="12" />
+                        <StackPanel Grid.Column="0" Spacing="4" Margin="0, 0, 5, 0">
+                            <TextBlock Text="Цена детали (₽)" Foreground="#7CA3AA" FontSize="12" />
                             <NumericUpDown Value="{Binding NewPartCost}" Minimum="0" FormatString="N0" HorizontalAlignment="Stretch" />
                         </StackPanel>
-                        <StackPanel Grid.Column="1" Spacing="5" Margin="6, 0, 0, 0">
-                            <TextBlock Text="Цена работы (₽)" Foreground="#6C9199" FontSize="12" />
+                        <StackPanel Grid.Column="1" Spacing="4" Margin="5, 0, 0, 0">
+                            <TextBlock Text="Цена работы (₽)" Foreground="#7CA3AA" FontSize="12" />
                             <NumericUpDown Value="{Binding NewLaborCost}" Minimum="0" FormatString="N0" HorizontalAlignment="Stretch" />
                         </StackPanel>
                     </Grid>
 
                     <!-- Заметка -->
-                    <StackPanel Spacing="5">
-                        <TextBlock Text="Заметка / Артикул" Foreground="#6C9199" FontSize="12" />
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Заметка / Артикул" Foreground="#7CA3AA" FontSize="12" />
                         <TextBox Text="{Binding NewNotes}" PlaceholderText="Артикул детали, бренд, вязкость..." />
                     </StackPanel>
 
                     <!-- Кнопка «Сохранить запись» -->
-                    <Button Content="✓ Сохранить запись"
+                    <Button Content="Сохранить запись"
                             Command="{Binding SaveRecordCommand}"
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center"
@@ -244,47 +282,48 @@
                             Background="#0CA61E"
                             Foreground="White"
                             FontWeight="Bold"
-                            FontSize="15"
-                            Height="46"
-                            CornerRadius="12"
-                            Margin="0, 6, 0, 0" />
+                            FontSize="14"
+                            Height="42"
+                            CornerRadius="8"
+                            Margin="0, 4, 0, 0" />
                 </StackPanel>
-            </lg:LiquidGlassSurface>
+            </Border>
 
             <!-- Заголовок истории -->
-            <TextBlock Text="История обслуживания" FontSize="18" FontWeight="Bold" Foreground="White" Margin="4, 4, 0, 0" />
+            <TextBlock Text="История обслуживания" FontSize="17" FontWeight="Bold" Foreground="White" Margin="4, 4, 0, 0" />
 
             <!-- Список записей выбранной машины -->
             <ItemsControl ItemsSource="{Binding SelectedVehicle.Records}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="m:ServiceRecord">
-                        <!-- Карточка одной замены (Настоящий LiquidGlass) -->
-                        <lg:LiquidGlassSurface CornerRadius="16"
-                                               SurfaceColor="#07343D"
-                                               BackdropOpacity="0.85"
-                                               RefractionAmount="12"
-                                               HighlightOpacity="0.5"
-                                               Padding="18"
-                                               Margin="0, 0, 0, 14">
-                            <StackPanel Spacing="10">
+                        <!-- Карточка одной замены -->
+                        <Border Background="#07343D" 
+                                CornerRadius="12" 
+                                Margin="0, 0, 0, 10" 
+                                Padding="16"
+                                BorderBrush="#144C57"
+                                BorderThickness="1">
+                            <StackPanel Spacing="8">
                                 <!-- Название детали и общая стоимость -->
                                 <Grid ColumnDefinitions="*, Auto">
-                                    <TextBlock Text="{Binding PartTitle}" FontSize="16" FontWeight="Bold" Foreground="White" TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding PartTitle}" FontSize="15" FontWeight="SemiBold" Foreground="White" TextWrapping="Wrap" />
                                     <TextBlock Grid.Column="1" Text="{Binding TotalCost, StringFormat='{}{0:N0} ₽'}" 
-                                               FontSize="17" FontWeight="Black" Foreground="#0CA61E" Margin="8,0,0,0" />
+                                               FontSize="16" FontWeight="Bold" Foreground="#0CA61E" Margin="8,0,0,0" />
                                 </Grid>
 
-                                <!-- Информация: Пробег, Дата, Сервис -->
+                                <!-- Информация: Пробег, Дата, Сервис (БЕЗ ЭМОДЗИ) -->
                                 <WrapPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding Mileage, StringFormat='{}📍 {0:N0} км  '}" Foreground="#6C9199" FontSize="13" />
-                                    <TextBlock Text="{Binding Date, StringFormat='{}📅 {0:dd.MM.yyyy}  '}" Foreground="#6C9199" FontSize="13" />
-                                    <TextBlock Text="{Binding ServiceName, StringFormat='{}🔧 {0}'}" Foreground="#6C9199" FontSize="13" />
+                                    <TextBlock Text="{Binding Mileage, StringFormat='{}{0:N0} км'}" Foreground="#7CA3AA" FontSize="13" />
+                                    <TextBlock Text="  ·  " Foreground="#3A6A73" FontSize="13" />
+                                    <TextBlock Text="{Binding Date, StringFormat='{}{0:dd.MM.yyyy}'}" Foreground="#7CA3AA" FontSize="13" />
+                                    <TextBlock Text="  ·  " Foreground="#3A6A73" FontSize="13" />
+                                    <TextBlock Text="{Binding ServiceName}" Foreground="#7CA3AA" FontSize="13" />
                                 </WrapPanel>
 
                                 <!-- Цены: деталь + работа -->
-                                <TextBlock Foreground="#4A6A70" FontSize="12">
+                                <TextBlock Foreground="#4D7780" FontSize="12">
                                     <TextBlock.Text>
-                                        <MultiBinding StringFormat="Деталь: {0:N0} ₽  |  Работа: {1:N0} ₽">
+                                        <MultiBinding StringFormat="Деталь: {0:N0} ₽   Работа: {1:N0} ₽">
                                             <Binding Path="PartCost" />
                                             <Binding Path="LaborCost" />
                                         </MultiBinding>
@@ -292,10 +331,10 @@
                                 </TextBlock>
 
                                 <!-- Заметка (если есть) -->
-                                <TextBlock Text="{Binding Notes, StringFormat='{}💬 {0}'}" 
-                                           Foreground="#8CAEB5" FontSize="12" FontStyle="Italic" TextWrapping="Wrap" />
+                                <TextBlock Text="{Binding Notes}" 
+                                           Foreground="#85ABB3" FontSize="12" FontStyle="Italic" TextWrapping="Wrap" />
                             </StackPanel>
-                        </lg:LiquidGlassSurface>
+                        </Border>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>

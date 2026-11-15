@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using AutoCareApp.Models;
+using AutoCareApp.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -9,7 +11,10 @@ namespace AutoCareApp.ViewModels;
 
 public partial class MainViewModel : ViewModelBase
 {
-    // Список всех автомобилей пользователя
+    // Список марок для автоподстановки
+    public IReadOnlyList<string> BrandSuggestions => CarCatalogService.PopularBrands;
+
+    // Список всех автомобилей
     public ObservableCollection<Vehicle> Vehicles { get; } = new();
 
     // Текущий выбранный автомобиль
@@ -17,15 +22,30 @@ public partial class MainViewModel : ViewModelBase
     [NotifyPropertyChangedFor(nameof(CanDeleteVehicle))]
     public partial Vehicle? SelectedVehicle { get; set; }
 
-    // Можно ли удалить машину (если осталась только 1 — удалять нельзя!)
+    // Можно ли удалить машину (если осталась только 1 — нельзя)
     public bool CanDeleteVehicle => Vehicles.Count > 1;
 
-    // Флаг: открыта ли форма добавления НОВОГО АВТО
+    // --- ФОРМА ДОБАВЛЕНИЯ АВТОМОБИЛЯ ---
     [ObservableProperty]
     public partial bool IsAddingVehicle { get; set; } = false;
 
     [ObservableProperty]
-    public partial string NewVehicleName { get; set; } = string.Empty;
+    public partial string NewBrand { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial string NewModel { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial string NewGeneration { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial decimal? NewYear { get; set; } = DateTime.Today.Year;
+
+    [ObservableProperty]
+    public partial string NewEngineVolume { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial string NewColor { get; set; } = string.Empty;
 
     [ObservableProperty]
     public partial decimal? NewVehicleMileage { get; set; } = 0;
@@ -33,14 +53,13 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     public partial string VehicleErrorMessage { get; set; } = string.Empty;
 
-    // Флаг: открыта ли форма добавления ЗАПИСИ О ЗАМЕНЕ
+    // --- ФОРМА ДОБАВЛЕНИЯ ЗАПИСИ ---
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(AddButtonText))]
     public partial bool IsAddingRecord { get; set; } = false;
 
-    public string AddButtonText => IsAddingRecord ? "✕ Отмена" : "+ Добавить запись о замене";
+    public string AddButtonText => IsAddingRecord ? "Отмена" : "Добавить запись о замене";
 
-    // Поля формы ввода запчасти:
     [ObservableProperty]
     public partial string NewPartTitle { get; set; } = string.Empty;
 
@@ -67,10 +86,15 @@ public partial class MainViewModel : ViewModelBase
 
     public MainViewModel()
     {
-        // Создаем первый стартовый автомобиль
+        // Создаем стартовый автомобиль с подробными параметрами
         var defaultCar = new Vehicle
         {
-            Name = "Lada Vesta 1.6",
+            Brand = "Lada",
+            Model = "Vesta",
+            Generation = "I",
+            Year = 2018,
+            EngineVolume = "1.6",
+            Color = "Тёмно-серый",
             CurrentMileage = 125000
         };
 
@@ -118,30 +142,44 @@ public partial class MainViewModel : ViewModelBase
     {
         IsAddingVehicle = !IsAddingVehicle;
         VehicleErrorMessage = string.Empty;
-        NewVehicleName = string.Empty;
+        NewBrand = string.Empty;
+        NewModel = string.Empty;
+        NewGeneration = string.Empty;
+        NewYear = DateTime.Today.Year;
+        NewEngineVolume = string.Empty;
+        NewColor = string.Empty;
         NewVehicleMileage = 0;
     }
 
     [RelayCommand]
     private void AddVehicle()
     {
-        if (string.IsNullOrWhiteSpace(NewVehicleName))
+        if (string.IsNullOrWhiteSpace(NewBrand))
         {
-            VehicleErrorMessage = "⚠️ Введите марку или модель авто!";
+            VehicleErrorMessage = "Укажите марку автомобиля!";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(NewModel))
+        {
+            VehicleErrorMessage = "Укажите модель автомобиля!";
             return;
         }
 
         var vehicle = new Vehicle
         {
-            Name = NewVehicleName.Trim(),
+            Brand = NewBrand.Trim(),
+            Model = NewModel.Trim(),
+            Generation = NewGeneration.Trim(),
+            Year = (int)(NewYear ?? DateTime.Today.Year),
+            EngineVolume = NewEngineVolume.Trim(),
+            Color = NewColor.Trim(),
             CurrentMileage = (int)(NewVehicleMileage ?? 0)
         };
 
         Vehicles.Add(vehicle);
         SelectedVehicle = vehicle;
 
-        NewVehicleName = string.Empty;
-        NewVehicleMileage = 0;
         VehicleErrorMessage = string.Empty;
         IsAddingVehicle = false;
         OnPropertyChanged(nameof(CanDeleteVehicle));
@@ -152,7 +190,7 @@ public partial class MainViewModel : ViewModelBase
     {
         if (SelectedVehicle == null || Vehicles.Count <= 1)
         {
-            return; // Нельзя удалить единственный авто
+            return;
         }
 
         var toRemove = SelectedVehicle;
@@ -180,13 +218,13 @@ public partial class MainViewModel : ViewModelBase
     {
         if (SelectedVehicle == null)
         {
-            RecordErrorMessage = "⚠️ Сначала выберите автомобиль!";
+            RecordErrorMessage = "Сначала выберите автомобиль!";
             return;
         }
 
         if (string.IsNullOrWhiteSpace(NewPartTitle))
         {
-            RecordErrorMessage = "⚠️ Пожалуйста, введите название детали!";
+            RecordErrorMessage = "Введите название детали!";
             return;
         }
 
@@ -206,10 +244,8 @@ public partial class MainViewModel : ViewModelBase
             Date = DateTime.Today
         };
 
-        // Вставляем в список текущего авто
         SelectedVehicle.Records.Insert(0, record);
 
-        // Обновляем пробег авто, если новый пробег больше
         if (mileageAtSwap > SelectedVehicle.CurrentMileage)
         {
             SelectedVehicle.CurrentMileage = mileageAtSwap;
