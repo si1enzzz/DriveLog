@@ -162,6 +162,27 @@ public partial class MainViewModel : ViewModelBase
         }
     }
 
+    // Реакция на выбор/ввод поколения: автоматически выставляем минимальный (начальный) год этого поколения
+    partial void OnNewGenerationChanged(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return;
+
+        // Ищем 4-значный год перед дефисом/тире: например "2018" из "IV (BD, 2018–2021)" или "2023" из "(2023–н.в.)"
+        var match = System.Text.RegularExpressions.Regex.Match(value, @"\b(19\d{2}|20\d{2})\s*[-–—]");
+        if (match.Success && int.TryParse(match.Groups[1].Value, out int year))
+        {
+            NewYear = year;
+            return;
+        }
+
+        // Запасной вариант: любой 4-значный год в диапазоне 1950-2035
+        var fallback = System.Text.RegularExpressions.Regex.Match(value, @"\b(19[5-9]\d|20[0-3]\d)\b");
+        if (fallback.Success && int.TryParse(fallback.Value, out int fallbackYear))
+        {
+            NewYear = fallbackYear;
+        }
+    }
+
     partial void OnSelectedVehicleChanged(Vehicle? value)
     {
         OnPropertyChanged(nameof(CanDeleteVehicle));
