@@ -41,10 +41,10 @@
 Проект построен по строгому стандарту **MVVM (Model - View - ViewModel)**:
 
 ```mermaid
-graph LR
-    View[Views: MainWindow.axaml] <-->|Data Binding & Commands| ViewModel[ViewModels: MainViewModel.cs]
-    ViewModel <-->|Business Logic & Collections| Model[Models: Vehicle & ServiceRecord]
-    ViewModel -->|Query $O(1)$| Service[Services: CarCatalogService.cs]
+flowchart LR
+    View["Views: MainWindow.axaml"] <-->|"Data Binding & Commands"| ViewModel["ViewModels: MainViewModel.cs"]
+    ViewModel <-->|"Business Logic & Collections"| Model["Models: Vehicle & ServiceRecord"]
+    ViewModel -->|"Быстрый поиск O(1)"| Service["Services: CarCatalogService.cs"]
 ```
 
 * **Separation of Concerns:** интерфейс не содержит логики в Code-Behind (`MainWindow.axaml.cs` пустой). Все расчёты, валидация и фильтрация живут в `MainViewModel`.
