@@ -51,6 +51,15 @@
             <Setter Property="Height" Value="38" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
+
+        <Style Selector="DatePicker">
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Background" Value="#002127" />
+            <Setter Property="BorderBrush" Value="#174A54" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Height" Value="38" />
+        </Style>
     </Window.Styles>
 
     <Grid>
@@ -337,17 +346,23 @@
                             <TextBox Text="{Binding NewPartTitle}" PlaceholderText="Например: Свечи зажигания NGK" />
                         </StackPanel>
 
-                        <!-- Пробег и Сервис в две колонки -->
+                        <!-- Дата замены и Пробег в две колонки -->
                         <Grid ColumnDefinitions="*, *" Margin="0, 2, 0, 0">
                             <StackPanel Grid.Column="0" Spacing="4" Margin="0, 0, 5, 0">
+                                <TextBlock Text="Дата замены" Foreground="#7CA3AA" FontSize="12" />
+                                <DatePicker SelectedDate="{Binding NewDate}" HorizontalAlignment="Stretch" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Spacing="4" Margin="5, 0, 0, 0">
                                 <TextBlock Text="Пробег (км)" Foreground="#7CA3AA" FontSize="12" />
                                 <NumericUpDown Value="{Binding NewMileage}" Minimum="0" FormatString="N0" HorizontalAlignment="Stretch" />
                             </StackPanel>
-                            <StackPanel Grid.Column="1" Spacing="4" Margin="5, 0, 0, 0">
-                                <TextBlock Text="Где меняли" Foreground="#7CA3AA" FontSize="12" />
-                                <TextBox Text="{Binding NewServiceName}" PlaceholderText="Сам в гараже" />
-                            </StackPanel>
                         </Grid>
+
+                        <!-- Где меняли -->
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Где меняли" Foreground="#7CA3AA" FontSize="12" />
+                            <TextBox Text="{Binding NewServiceName}" PlaceholderText="Сам в гараже / СТО" />
+                        </StackPanel>
 
                         <!-- Цены: деталь и работа (без стрелочек) -->
                         <Grid ColumnDefinitions="*, *" Margin="0, 2, 0, 0">

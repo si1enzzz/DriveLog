@@ -73,6 +73,9 @@ public partial class MainViewModel : ViewModelBase
     public partial string NewPartTitle { get; set; } = string.Empty;
 
     [ObservableProperty]
+    public partial DateTimeOffset? NewDate { get; set; } = DateTimeOffset.Now;
+
+    [ObservableProperty]
     public partial string NewCategory { get; set; } = "ТО";
 
     [ObservableProperty]
@@ -281,6 +284,7 @@ public partial class MainViewModel : ViewModelBase
         if (IsAddingRecord && SelectedVehicle != null)
         {
             NewMileage = SelectedVehicle.CurrentMileage;
+            NewDate = DateTimeOffset.Now;
         }
     }
 
@@ -321,7 +325,7 @@ public partial class MainViewModel : ViewModelBase
             LaborCost = laborCost,
             ServiceName = string.IsNullOrWhiteSpace(NewServiceName) ? "Сам в гараже" : NewServiceName.Trim(),
             Notes = NewNotes.Trim(),
-            Date = DateTime.Today
+            Date = (NewDate ?? DateTimeOffset.Now).DateTime
         };
 
         SelectedVehicle.Records.Insert(0, record);
@@ -335,6 +339,7 @@ public partial class MainViewModel : ViewModelBase
         NewPartCost = 0m;
         NewLaborCost = 0m;
         NewNotes = string.Empty;
+        NewDate = DateTimeOffset.Now;
         RecordErrorMessage = string.Empty;
         IsAddingRecord = false;
     }
