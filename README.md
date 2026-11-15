@@ -7,6 +7,7 @@
 [![C#](https://img.shields.io/badge/C%23-13.0-239120?logo=csharp&logoColor=white)](https://learn.microsoft.com/dotnet/csharp/)
 [![Avalonia UI](https://img.shields.io/badge/Avalonia_UI-11.x-8A2BE2?logo=avalonia&logoColor=white)](https://avaloniaui.net/)
 [![Architecture](https://img.shields.io/badge/Architecture-MVVM-00599C)](https://learn.microsoft.com/dotnet/architecture/maui/mvvm)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/si1enzzz/app-to-drivers)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ---
@@ -76,11 +77,17 @@ flowchart LR
 
 ## 🚀 Запуск проекта
 
-### Требования
+### ☁️ Быстрый запуск в браузере (GitHub Codespaces)
+Вы можете исследовать код и архитектуру проекта прямо в браузере без локальной установки зависимостей:
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/si1enzzz/app-to-drivers)
+
+### Локальный запуск
+#### Требования
 * [.NET 10 SDK](https://dotnet.microsoft.com/download)
 * Visual Studio 2022 / 2025 или JetBrains Rider / VS Code с поддержкой C#
 
-### Сборка и запуск через CLI
+#### Сборка и запуск через CLI
 ```bash
 # Клонировать репозиторий
 git clone https://github.com/si1enzzz/app-to-drivers.git

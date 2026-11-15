@@ -1,0 +1,19 @@
+{
+  "name": "AutoCare Tracker (.NET 10 & Avalonia)",
+  "image": "mcr.microsoft.com/devcontainers/dotnet:latest",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-dotnettools.csdevkit",
+        "ms-dotnettools.csharp",
+        "AvaloniaTeam.vscode-avalonia"
+      ],
+      "settings": {
+        "dotnet.defaultSolution": "AutoCareApp/AutoCareApp.slnx",
+        "omnisharp.enableRoslynAnalyzers": true,
+        "editor.formatOnSave": true
+      }
+    }
+  },
+  "postCreateCommand": "dotnet --version && cd AutoCareApp/AutoCareApp && dotnet restore"
+}
