@@ -1,12 +1,18 @@
 ﻿using System;
 using System.Globalization;
+using SQLite;
 
 namespace AutoCareApp.Models;
 
 public class ServiceRecord
 {
     // Уникальный идентификатор
+    [PrimaryKey, AutoIncrement]
     public int Id { get; set; }
+
+    // Внешний ключ: к какому автомобилю относится эта запись
+    [Indexed]
+    public int VehicleId { get; set; }
 
     // Что меняли
     public string PartTitle { get; set; } = string.Empty;
@@ -33,11 +39,13 @@ public class ServiceRecord
     public string Notes { get; set; } = string.Empty;
 
     // Свойство только для чтения: автоматически считает общую сумму
+    [Ignore]
     public decimal TotalCost => PartCost + LaborCost;
 
     // Умное отображение даты:
     // Если в текущем году — показывает число и месяц (например: "1 ноября")
     // Если в предыдущих годах — добавляет год (например: "15 сентября 2024 г.")
+    [Ignore]
     public string DisplayDate
     {
         get

@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
+using SQLite;
 
 namespace AutoCareApp.Models;
 
 public partial class Vehicle : ObservableObject
 {
+    [PrimaryKey, AutoIncrement]
     public int Id { get; set; }
 
     [ObservableProperty]
@@ -38,6 +40,7 @@ public partial class Vehicle : ObservableObject
     public partial int CurrentMileage { get; set; } = 0;
 
     // Только марка и модель для крупного заголовка (например: "Hyundai Elantra")
+    [Ignore]
     public string Title
     {
         get
@@ -51,6 +54,7 @@ public partial class Vehicle : ObservableObject
     }
 
     // Вся детальная информация в одной аккуратной строке под заголовком
+    [Ignore]
     public string SubDetails
     {
         get
@@ -66,9 +70,11 @@ public partial class Vehicle : ObservableObject
     }
 
     // Список записей обслуживания
+    [Ignore]
     public ObservableCollection<ServiceRecord> Records { get; } = new();
 
     // Сумма расходов по этой машине
+    [Ignore]
     public decimal TotalSpent => Records.Sum(r => r.TotalCost);
 
     public Vehicle()

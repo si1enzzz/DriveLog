@@ -11,6 +11,9 @@ namespace AutoCareApp.ViewModels;
 
 public partial class MainViewModel : ViewModelBase
 {
+    // Сервис базы данных SQLite
+    private readonly DatabaseService _db = DatabaseService.Instance;
+
     // Список марок для автоподстановки
     public IReadOnlyList<string> BrandSuggestions => CarCatalogService.PopularBrands;
 
@@ -26,8 +29,11 @@ public partial class MainViewModel : ViewModelBase
     [NotifyPropertyChangedFor(nameof(CanDeleteVehicle))]
     public partial Vehicle? SelectedVehicle { get; set; }
 
-    // Можно ли удалить машину (если осталась только 1 — нельзя)
-    public bool CanDeleteVehicle => Vehicles.Count > 1;
+    // Можно ли удалить машину (если выбрана любая машина — можно удалить)
+    public bool CanDeleteVehicle => SelectedVehicle != null;
+
+    // Есть ли в гараже хотя бы один автомобиль
+    public bool HasVehicles => Vehicles.Count > 0;
 
     // --- ФОРМА ДОБАВЛЕНИЯ АВТОМОБИЛЯ ---
     [ObservableProperty]
@@ -98,46 +104,13 @@ public partial class MainViewModel : ViewModelBase
 
     public MainViewModel()
     {
-        // Создаем стартовый автомобиль (как на скриншоте пользователя)
-        var defaultCar = new Vehicle
+        // Загрузка сохранённых автомобилей из локальной базы данных SQLite
+        var savedVehicles = _db.GetAllVehicles();
+        foreach (var v in savedVehicles)
         {
-            Brand = "Hyundai",
-            Model = "Elantra",
-            Generation = "VI (AD)",
-            Year = 2018,
-            EngineVolume = "2.0",
-            Color = "Красный",
-            CurrentMileage = 85000
-        };
-
-        // Запись в текущем году (будет отображаться только день и месяц: "1 ноября")
-        defaultCar.Records.Add(new ServiceRecord
-        {
-            PartTitle = "Моторное масло 5W-40 + Фильтр",
-            Category = "ТО",
-            Date = DateTime.Today.AddDays(-14),
-            Mileage = 82000,
-            PartCost = 3800m,
-            LaborCost = 1200m,
-            ServiceName = "СТО Вираж",
-            Notes = "Артикул фильтра MANN W914/2"
-        });
-
-        // Запись в прошлом году (будет отображаться с годом: "15 сентября 2025 г.")
-        defaultCar.Records.Add(new ServiceRecord
-        {
-            PartTitle = "Передние тормозные колодки",
-            Category = "Тормоза",
-            Date = new DateTime(DateTime.Today.Year - 1, 9, 15),
-            Mileage = 75000,
-            PartCost = 2400m,
-            LaborCost = 0m,
-            ServiceName = "Сам в гараже",
-            Notes = "Заменил за 1.5 часа"
-        });
-
-        Vehicles.Add(defaultCar);
-        SelectedVehicle = defaultCar;
+            Vehicles.Add(v);
+        }
+        SelectedVehicle = Vehicles.FirstOrDefault();
     }
 
     // Реакция на изменение марки: обновляем доступные модели
@@ -189,6 +162,7 @@ public partial class MainViewModel : ViewModelBase
     partial void OnSelectedVehicleChanged(Vehicle? value)
     {
         OnPropertyChanged(nameof(CanDeleteVehicle));
+        OnPropertyChanged(nameof(HasVehicles));
         if (value != null)
         {
             NewMileage = value.CurrentMileage;
@@ -245,26 +219,32 @@ public partial class MainViewModel : ViewModelBase
             CurrentMileage = (int)(NewVehicleMileage ?? 0)
         };
 
+        // Сохранение в базу данных SQLite (присваивает уникальный Id)
+        _db.SaveVehicle(vehicle);
+
         Vehicles.Add(vehicle);
         SelectedVehicle = vehicle;
 
         VehicleErrorMessage = string.Empty;
         IsAddingVehicle = false;
         OnPropertyChanged(nameof(CanDeleteVehicle));
+        OnPropertyChanged(nameof(HasVehicles));
     }
 
     [RelayCommand]
     private void DeleteCurrentVehicle()
     {
-        if (SelectedVehicle == null || Vehicles.Count <= 1)
+        if (SelectedVehicle == null)
         {
             return;
         }
 
         var toRemove = SelectedVehicle;
+        _db.DeleteVehicle(toRemove.Id);
         Vehicles.Remove(toRemove);
         SelectedVehicle = Vehicles.FirstOrDefault();
         OnPropertyChanged(nameof(CanDeleteVehicle));
+        OnPropertyChanged(nameof(HasVehicles));
     }
 
     // --- УПРАВЛЕНИЕ ЗАПИСЯМИ ---
@@ -318,6 +298,7 @@ public partial class MainViewModel : ViewModelBase
 
         var record = new ServiceRecord
         {
+            VehicleId = SelectedVehicle.Id,
             PartTitle = NewPartTitle.Trim(),
             Category = string.IsNullOrWhiteSpace(NewCategory) ? "ТО" : NewCategory.Trim(),
             Mileage = mileageAtSwap,
@@ -328,11 +309,15 @@ public partial class MainViewModel : ViewModelBase
             Date = (NewDate ?? DateTimeOffset.Now).DateTime
         };
 
+        // Сохраняем запись в базу данных SQLite
+        _db.SaveRecord(record);
+
         SelectedVehicle.Records.Insert(0, record);
 
         if (mileageAtSwap > SelectedVehicle.CurrentMileage)
         {
             SelectedVehicle.CurrentMileage = mileageAtSwap;
+            _db.SaveVehicle(SelectedVehicle); // сохраняем обновленный пробег машины
         }
 
         NewPartTitle = string.Empty;
