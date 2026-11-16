@@ -52,19 +52,42 @@
             <Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
 
+        <Style Selector="Button">
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+        </Style>
+
         <Style Selector="DatePicker">
             <Setter Property="CornerRadius" Value="8" />
             <Setter Property="Background" Value="#002127" />
             <Setter Property="BorderBrush" Value="#174A54" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Foreground" Value="White" />
-            <Setter Property="Height" Value="38" />
+            <Setter Property="Height" Value="40" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
         </Style>
 
         <Style Selector="DatePicker /template/ Button">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Foreground" Value="White" />
+            <Setter Property="VerticalAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="0" />
+        </Style>
+
+        <Style Selector="DatePicker /template/ TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Margin" Value="0" />
+        </Style>
+
+        <Style Selector="DatePicker /template/ Rectangle">
+            <Setter Property="Fill" Value="#174A54" />
+            <Setter Property="Width" Value="1" />
         </Style>
     </Window.Styles>
 
@@ -107,10 +130,10 @@
                                 Margin="0,0,6,0"
                                 VerticalContentAlignment="Center" />
 
-                        <!-- Кнопка «Удалить» авто -->
+                        <!-- Кнопка «Удалить» авто (открывает окно подтверждения) -->
                         <Button Grid.Column="2" 
                                 Content="Удалить"
-                                Command="{Binding DeleteCurrentVehicleCommand}"
+                                Command="{Binding RequestDeleteVehicleCommand}"
                                 IsEnabled="{Binding CanDeleteVehicle}"
                                 Background="#9C1111"
                                 Foreground="White"
@@ -247,10 +270,11 @@
                                 FontWeight="Bold" 
                                 FontSize="14" 
                                 Height="42" 
-                                Padding="20, 0" 
+                                Padding="24, 0" 
                                 CornerRadius="8" 
                                 HorizontalAlignment="Center" 
-                                VerticalAlignment="Center" 
+                                HorizontalContentAlignment="Center"
+                                VerticalContentAlignment="Center" 
                                 Margin="0, 8, 0, 0" />
                     </StackPanel>
                 </Border>
@@ -453,6 +477,66 @@
                                     FontSize="14"
                                     Height="40"
                                     CornerRadius="8"
+                                    Margin="5, 0, 0, 0" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- ДИАЛОГ ПОДТВЕРЖДЕНИЯ УДАЛЕНИЯ АВТОМОБИЛЯ -->
+                <Border Background="#07343D" 
+                        CornerRadius="16" 
+                        Padding="22"
+                        BorderBrush="#E03E3E"
+                        BorderThickness="1"
+                        BoxShadow="0 10 36 #A0000000"
+                        IsVisible="{Binding IsConfirmingDeleteVehicle}"
+                        MaxWidth="380">
+                    <StackPanel Spacing="16">
+                        <!-- Заголовок с предупреждением -->
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Удалить автомобиль?" 
+                                       FontSize="19" 
+                                       FontWeight="Bold" 
+                                       Foreground="White" />
+                            <TextBlock Foreground="#B8D0D5" 
+                                       FontSize="13" 
+                                       TextWrapping="Wrap" 
+                                       LineHeight="18">
+                                <TextBlock.Text>
+                                    <MultiBinding StringFormat="Вы уверены, что хотите удалить {0}? Все данные и история обслуживания ({1} записей) будут удалены безвозвратно.">
+                                        <Binding Path="SelectedVehicle.Title" />
+                                        <Binding Path="SelectedVehicle.Records.Count" />
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                            </TextBlock>
+                        </StackPanel>
+
+                        <!-- Кнопки: Да, удалить и Отмена -->
+                        <Grid ColumnDefinitions="*, *" Margin="0, 4, 0, 0">
+                            <Button Grid.Column="0" 
+                                    Content="Да, удалить"
+                                    Command="{Binding ConfirmDeleteVehicleCommand}"
+                                    Background="#E03E3E" 
+                                    Foreground="White"
+                                    FontWeight="Bold" 
+                                    Height="40" 
+                                    CornerRadius="8"
+                                    HorizontalAlignment="Stretch" 
+                                    HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center" 
+                                    Margin="0, 0, 5, 0" />
+
+                            <Button Grid.Column="1" 
+                                    Content="Отмена"
+                                    Command="{Binding CancelDeleteVehicleCommand}"
+                                    Background="#002127" 
+                                    Foreground="#7CA3AA"
+                                    FontWeight="Medium" 
+                                    Height="40" 
+                                    CornerRadius="8"
+                                    HorizontalAlignment="Stretch" 
+                                    HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center" 
                                     Margin="5, 0, 0, 0" />
                         </Grid>
                     </StackPanel>

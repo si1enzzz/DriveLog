@@ -64,6 +64,11 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     public partial string VehicleErrorMessage { get; set; } = string.Empty;
 
+    // --- ДИАЛОГ ПОДТВЕРЖДЕНИЯ УДАЛЕНИЯ АВТОМОБИЛЯ ---
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsAnyFormOpen))]
+    public partial bool IsConfirmingDeleteVehicle { get; set; } = false;
+
     // --- ФОРМА ДОБАВЛЕНИЯ ЗАПИСИ ---
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(AddButtonText))]
@@ -73,7 +78,7 @@ public partial class MainViewModel : ViewModelBase
     public string AddButtonText => IsAddingRecord ? "Отмена" : "Добавить запись о замене";
 
     // Открыта ли хоть одна модальная форма (для эффекта затемнения фона)
-    public bool IsAnyFormOpen => IsAddingVehicle || IsAddingRecord;
+    public bool IsAnyFormOpen => IsAddingVehicle || IsAddingRecord || IsConfirmingDeleteVehicle;
 
     [ObservableProperty]
     public partial string NewPartTitle { get; set; } = string.Empty;
@@ -177,8 +182,9 @@ public partial class MainViewModel : ViewModelBase
         IsAddingVehicle = !IsAddingVehicle;
         if (IsAddingVehicle)
         {
-            // Взаимное закрытие: если открываем добавление авто, закрываем форму записи
+            // Взаимное закрытие: если открываем добавление авто, закрываем форму записи и окно удаления
             IsAddingRecord = false;
+            IsConfirmingDeleteVehicle = false;
         }
 
         VehicleErrorMessage = string.Empty;
@@ -231,11 +237,31 @@ public partial class MainViewModel : ViewModelBase
         OnPropertyChanged(nameof(HasVehicles));
     }
 
+    // Запрос на удаление (открывает окно подтверждения)
     [RelayCommand]
-    private void DeleteCurrentVehicle()
+    private void RequestDeleteVehicle()
+    {
+        if (SelectedVehicle == null) return;
+
+        IsAddingVehicle = false;
+        IsAddingRecord = false;
+        IsConfirmingDeleteVehicle = true;
+    }
+
+    // Отмена удаления в модальном окне
+    [RelayCommand]
+    private void CancelDeleteVehicle()
+    {
+        IsConfirmingDeleteVehicle = false;
+    }
+
+    // Реальное удаление после подтверждения пользователем
+    [RelayCommand]
+    private void ConfirmDeleteVehicle()
     {
         if (SelectedVehicle == null)
         {
+            IsConfirmingDeleteVehicle = false;
             return;
         }
 
@@ -243,6 +269,7 @@ public partial class MainViewModel : ViewModelBase
         _db.DeleteVehicle(toRemove.Id);
         Vehicles.Remove(toRemove);
         SelectedVehicle = Vehicles.FirstOrDefault();
+        IsConfirmingDeleteVehicle = false;
         OnPropertyChanged(nameof(CanDeleteVehicle));
         OnPropertyChanged(nameof(HasVehicles));
     }
@@ -255,8 +282,9 @@ public partial class MainViewModel : ViewModelBase
         IsAddingRecord = !IsAddingRecord;
         if (IsAddingRecord)
         {
-            // Взаимное закрытие: если открываем добавление записи, закрываем добавление авто
+            // Взаимное закрытие: если открываем добавление записи, закрываем добавление авто и окно удаления
             IsAddingVehicle = false;
+            IsConfirmingDeleteVehicle = false;
         }
 
         RecordErrorMessage = string.Empty;
@@ -273,6 +301,7 @@ public partial class MainViewModel : ViewModelBase
     {
         IsAddingVehicle = false;
         IsAddingRecord = false;
+        IsConfirmingDeleteVehicle = false;
         VehicleErrorMessage = string.Empty;
         RecordErrorMessage = string.Empty;
     }
