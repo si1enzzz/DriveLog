@@ -24,3 +24,8 @@ build/
 ## Операционные системы
 .DS_Store
 Thumbs.db
+
+## Скомпилированные дистрибутивы и релизы
+publish/
+AutoCareApp_*/
+*.zip
