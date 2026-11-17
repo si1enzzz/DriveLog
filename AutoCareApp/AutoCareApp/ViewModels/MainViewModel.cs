@@ -35,6 +35,39 @@ public partial class MainViewModel : ViewModelBase
     // Есть ли в гараже хотя бы один автомобиль
     public bool HasVehicles => Vehicles.Count > 0;
 
+    // --- НАВИГАЦИЯ МЕЖДУ ВКЛАДКАМИ (BOTTOMBAR) ---
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsGarageTab))]
+    [NotifyPropertyChangedFor(nameof(IsAccountTab))]
+    [NotifyPropertyChangedFor(nameof(GarageTabColor))]
+    [NotifyPropertyChangedFor(nameof(AccountTabColor))]
+    public partial int SelectedTabIndex { get; set; } = 0; // 0 = Гараж, 1 = Аккаунт
+
+    public bool IsGarageTab => SelectedTabIndex == 0;
+    public bool IsAccountTab => SelectedTabIndex == 1;
+
+    public string GarageTabColor => IsGarageTab ? "#0CA61E" : "#7CA3AA";
+    public string AccountTabColor => IsAccountTab ? "#0CA61E" : "#7CA3AA";
+
+    [RelayCommand]
+    private void SelectGarageTab() => SelectedTabIndex = 0;
+
+    [RelayCommand]
+    private void SelectAccountTab() => SelectedTabIndex = 1;
+
+    // --- ДАННЫЕ ПРОФИЛЯ И ВКЛАДКИ АККАУНТА ---
+    [ObservableProperty]
+    public partial string DriverName { get; set; } = "Водитель";
+
+    [ObservableProperty]
+    public partial string DriverExperience { get; set; } = "2 года";
+
+    [ObservableProperty]
+    public partial string ExportStatusMessage { get; set; } = string.Empty;
+
+    public decimal TotalGarageSpent => Vehicles.Sum(v => v.TotalSpent);
+    public int TotalRecordsCount => Vehicles.Sum(v => v.Records.Count);
+
     // --- ФОРМА ДОБАВЛЕНИЯ АВТОМОБИЛЯ ---
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsAnyFormOpen))]
@@ -235,6 +268,8 @@ public partial class MainViewModel : ViewModelBase
         IsAddingVehicle = false;
         OnPropertyChanged(nameof(CanDeleteVehicle));
         OnPropertyChanged(nameof(HasVehicles));
+        OnPropertyChanged(nameof(TotalGarageSpent));
+        OnPropertyChanged(nameof(TotalRecordsCount));
     }
 
     // Запрос на удаление (открывает окно подтверждения)
@@ -272,6 +307,8 @@ public partial class MainViewModel : ViewModelBase
         IsConfirmingDeleteVehicle = false;
         OnPropertyChanged(nameof(CanDeleteVehicle));
         OnPropertyChanged(nameof(HasVehicles));
+        OnPropertyChanged(nameof(TotalGarageSpent));
+        OnPropertyChanged(nameof(TotalRecordsCount));
     }
 
     // --- УПРАВЛЕНИЕ ЗАПИСЯМИ ---
@@ -356,5 +393,31 @@ public partial class MainViewModel : ViewModelBase
         NewDate = DateTimeOffset.Now;
         RecordErrorMessage = string.Empty;
         IsAddingRecord = false;
+
+        OnPropertyChanged(nameof(TotalGarageSpent));
+        OnPropertyChanged(nameof(TotalRecordsCount));
+    }
+
+    // --- ЭКСПОРТ ДАННЫХ (Markdown, TXT, JSON) ---
+
+    [RelayCommand]
+    private void ExportSelectedVehicle(string? format)
+    {
+        if (SelectedVehicle == null)
+        {
+            ExportStatusMessage = "Для экспорта сначала добавьте или выберите автомобиль.";
+            return;
+        }
+
+        try
+        {
+            string fmt = string.IsNullOrWhiteSpace(format) ? "md" : format;
+            string path = ExportService.SaveReport(SelectedVehicle, fmt);
+            ExportStatusMessage = $"✓ Отчёт сохранён: {System.IO.Path.GetFileName(path)}";
+        }
+        catch (Exception ex)
+        {
+            ExportStatusMessage = $"Ошибка экспорта: {ex.Message}";
+        }
     }
 }
