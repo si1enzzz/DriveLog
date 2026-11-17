@@ -35,25 +35,170 @@ public partial class MainViewModel : ViewModelBase
     // Есть ли в гараже хотя бы один автомобиль
     public bool HasVehicles => Vehicles.Count > 0;
 
-    // --- НАВИГАЦИЯ МЕЖДУ ВКЛАДКАМИ (BOTTOMBAR) ---
+    // --- НАВИГАЦИЯ МЕЖДУ ВКЛАДКАМИ (TELEGRAM FLOATING PILL BAR) ---
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsGarageTab))]
     [NotifyPropertyChangedFor(nameof(IsAccountTab))]
+    [NotifyPropertyChangedFor(nameof(GarageTabPillColor))]
+    [NotifyPropertyChangedFor(nameof(AccountTabPillColor))]
     [NotifyPropertyChangedFor(nameof(GarageTabColor))]
     [NotifyPropertyChangedFor(nameof(AccountTabColor))]
+    [NotifyPropertyChangedFor(nameof(CanShowFab))]
     public partial int SelectedTabIndex { get; set; } = 0; // 0 = Гараж, 1 = Аккаунт
 
     public bool IsGarageTab => SelectedTabIndex == 0;
     public bool IsAccountTab => SelectedTabIndex == 1;
+    public bool CanShowFab => IsGarageTab && HasVehicles;
 
-    public string GarageTabColor => IsGarageTab ? "#0CA61E" : "#7CA3AA";
-    public string AccountTabColor => IsAccountTab ? "#0CA61E" : "#7CA3AA";
+    // Telegram-style floating pill colors
+    public string GarageTabPillColor => IsGarageTab 
+        ? (IsDarkTheme ? "#162846" : "#D8E5F8") 
+        : "Transparent";
+    public string AccountTabPillColor => IsAccountTab 
+        ? (IsDarkTheme ? "#162846" : "#D8E5F8") 
+        : "Transparent";
+
+    public string GarageTabColor => IsGarageTab ? "#074CBA" : (IsDarkTheme ? "#8E8E93" : "#6C6C70");
+    public string AccountTabColor => IsAccountTab ? "#074CBA" : (IsDarkTheme ? "#8E8E93" : "#6C6C70");
 
     [RelayCommand]
-    private void SelectGarageTab() => SelectedTabIndex = 0;
+    private void SelectGarageTab()
+    {
+        SelectedTabIndex = 0;
+        RefreshTabBindings();
+    }
 
     [RelayCommand]
-    private void SelectAccountTab() => SelectedTabIndex = 1;
+    private void SelectAccountTab()
+    {
+        SelectedTabIndex = 1;
+        RefreshTabBindings();
+    }
+
+    private void RefreshTabBindings()
+    {
+        OnPropertyChanged(nameof(IsGarageTab));
+        OnPropertyChanged(nameof(IsAccountTab));
+        OnPropertyChanged(nameof(GarageTabPillColor));
+        OnPropertyChanged(nameof(AccountTabPillColor));
+        OnPropertyChanged(nameof(GarageTabColor));
+        OnPropertyChanged(nameof(AccountTabColor));
+        OnPropertyChanged(nameof(CanShowFab));
+    }
+
+    // --- ТЕМА ОФОРМЛЕНИЯ (DARK / LIGHT) ---
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(BgColor))]
+    [NotifyPropertyChangedFor(nameof(CardColor))]
+    [NotifyPropertyChangedFor(nameof(CardBorderColor))]
+    [NotifyPropertyChangedFor(nameof(InputBgColor))]
+    [NotifyPropertyChangedFor(nameof(InputBorderColor))]
+    [NotifyPropertyChangedFor(nameof(AccentColor))]
+    [NotifyPropertyChangedFor(nameof(TextPrimaryColor))]
+    [NotifyPropertyChangedFor(nameof(TextSecondaryColor))]
+    [NotifyPropertyChangedFor(nameof(TextHighlightColor))]
+    [NotifyPropertyChangedFor(nameof(BottomBarBgColor))]
+    [NotifyPropertyChangedFor(nameof(BottomBarBorderColor))]
+    [NotifyPropertyChangedFor(nameof(GarageTabPillColor))]
+    [NotifyPropertyChangedFor(nameof(AccountTabPillColor))]
+    [NotifyPropertyChangedFor(nameof(GarageTabColor))]
+    [NotifyPropertyChangedFor(nameof(AccountTabColor))]
+    [NotifyPropertyChangedFor(nameof(DarkThemeBtnBg))]
+    [NotifyPropertyChangedFor(nameof(DarkThemeBtnFg))]
+    [NotifyPropertyChangedFor(nameof(LightThemeBtnBg))]
+    [NotifyPropertyChangedFor(nameof(LightThemeBtnFg))]
+    [NotifyPropertyChangedFor(nameof(RuLangBtnBg))]
+    [NotifyPropertyChangedFor(nameof(RuLangBtnFg))]
+    [NotifyPropertyChangedFor(nameof(EnLangBtnBg))]
+    [NotifyPropertyChangedFor(nameof(EnLangBtnFg))]
+    public partial bool IsDarkTheme { get; set; } = true;
+
+    // Палитра Dark: фон #000000, карточки #0F0F0F, акцент #074CBA, расходы #F2F2F2
+    // Палитра Light: фон #E3E3E3, карточки #FFFFFF, акцент #074CBA, расходы #0F0F0F
+    public string BgColor => IsDarkTheme ? "#000000" : "#E3E3E3";
+    public string CardColor => IsDarkTheme ? "#0F0F0F" : "#FFFFFF";
+    public string CardBorderColor => IsDarkTheme ? "#1C1C1E" : "#D1D1D6";
+    public string InputBgColor => IsDarkTheme ? "#161618" : "#F2F2F7";
+    public string InputBorderColor => IsDarkTheme ? "#2C2C30" : "#C7C7CC";
+    public string AccentColor => "#074CBA";
+    public string TextPrimaryColor => IsDarkTheme ? "#FFFFFF" : "#000000";
+    public string TextSecondaryColor => IsDarkTheme ? "#8E8E93" : "#6C6C70";
+    public string TextHighlightColor => IsDarkTheme ? "#F2F2F2" : "#0F0F0F";
+
+    public string BottomBarBgColor => IsDarkTheme ? "#141416" : "#FFFFFF";
+    public string BottomBarBorderColor => IsDarkTheme ? "#222226" : "#D1D1D6";
+
+    public string DarkThemeBtnBg => IsDarkTheme ? "#074CBA" : (IsDarkTheme ? "#1F1F24" : "#E2E2E6");
+    public string DarkThemeBtnFg => IsDarkTheme ? "#FFFFFF" : (IsDarkTheme ? "#8E8E93" : "#6C6C70");
+    public string LightThemeBtnBg => !IsDarkTheme ? "#074CBA" : (IsDarkTheme ? "#1F1F24" : "#E2E2E6");
+    public string LightThemeBtnFg => !IsDarkTheme ? "#FFFFFF" : (IsDarkTheme ? "#8E8E93" : "#6C6C70");
+
+    [RelayCommand]
+    private void SetDarkTheme()
+    {
+        IsDarkTheme = true;
+        ApplyThemeVariant();
+    }
+
+    [RelayCommand]
+    private void SetLightTheme()
+    {
+        IsDarkTheme = false;
+        ApplyThemeVariant();
+    }
+
+    private void ApplyThemeVariant()
+    {
+        if (Avalonia.Application.Current != null)
+        {
+            Avalonia.Application.Current.RequestedThemeVariant = IsDarkTheme 
+                ? Avalonia.Styling.ThemeVariant.Dark 
+                : Avalonia.Styling.ThemeVariant.Light;
+        }
+    }
+
+    // --- ЛОКАЛИЗАЦИЯ ИНТЕРФЕЙСА (RU / EN) ---
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsRussian))]
+    [NotifyPropertyChangedFor(nameof(IsEnglish))]
+    [NotifyPropertyChangedFor(nameof(RuLangBtnBg))]
+    [NotifyPropertyChangedFor(nameof(RuLangBtnFg))]
+    [NotifyPropertyChangedFor(nameof(EnLangBtnBg))]
+    [NotifyPropertyChangedFor(nameof(EnLangBtnFg))]
+    [NotifyPropertyChangedFor(nameof(DeleteConfirmMessage))]
+    public partial string CurrentLanguage { get; set; } = "ru";
+
+    public bool IsRussian => CurrentLanguage == "ru";
+    public bool IsEnglish => CurrentLanguage == "en";
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DeleteConfirmMessage))]
+    public partial AppStrings Strings { get; set; } = AppStrings.Russian;
+
+    public string RuLangBtnBg => IsRussian ? "#074CBA" : (IsDarkTheme ? "#1F1F24" : "#E2E2E6");
+    public string RuLangBtnFg => IsRussian ? "#FFFFFF" : (IsDarkTheme ? "#8E8E93" : "#6C6C70");
+    public string EnLangBtnBg => IsEnglish ? "#074CBA" : (IsDarkTheme ? "#1F1F24" : "#E2E2E6");
+    public string EnLangBtnFg => IsEnglish ? "#FFFFFF" : (IsDarkTheme ? "#8E8E93" : "#6C6C70");
+
+    [RelayCommand]
+    private void SetRussianLanguage()
+    {
+        CurrentLanguage = "ru";
+        Strings = AppStrings.Russian;
+        OnPropertyChanged(nameof(DeleteConfirmMessage));
+    }
+
+    [RelayCommand]
+    private void SetEnglishLanguage()
+    {
+        CurrentLanguage = "en";
+        Strings = AppStrings.English;
+        OnPropertyChanged(nameof(DeleteConfirmMessage));
+    }
+
+    public string DeleteConfirmMessage => SelectedVehicle == null 
+        ? "" 
+        : string.Format(Strings.DeleteConfirmFormat, SelectedVehicle.Title, SelectedVehicle.Records.Count);
 
     // --- ДАННЫЕ ПРОФИЛЯ И ВКЛАДКИ АККАУНТА ---
     [ObservableProperty]
@@ -201,6 +346,8 @@ public partial class MainViewModel : ViewModelBase
     {
         OnPropertyChanged(nameof(CanDeleteVehicle));
         OnPropertyChanged(nameof(HasVehicles));
+        OnPropertyChanged(nameof(CanShowFab));
+        OnPropertyChanged(nameof(DeleteConfirmMessage));
         if (value != null)
         {
             NewMileage = value.CurrentMileage;
@@ -268,6 +415,8 @@ public partial class MainViewModel : ViewModelBase
         IsAddingVehicle = false;
         OnPropertyChanged(nameof(CanDeleteVehicle));
         OnPropertyChanged(nameof(HasVehicles));
+        OnPropertyChanged(nameof(CanShowFab));
+        OnPropertyChanged(nameof(DeleteConfirmMessage));
         OnPropertyChanged(nameof(TotalGarageSpent));
         OnPropertyChanged(nameof(TotalRecordsCount));
     }
@@ -307,6 +456,8 @@ public partial class MainViewModel : ViewModelBase
         IsConfirmingDeleteVehicle = false;
         OnPropertyChanged(nameof(CanDeleteVehicle));
         OnPropertyChanged(nameof(HasVehicles));
+        OnPropertyChanged(nameof(CanShowFab));
+        OnPropertyChanged(nameof(DeleteConfirmMessage));
         OnPropertyChanged(nameof(TotalGarageSpent));
         OnPropertyChanged(nameof(TotalRecordsCount));
     }
