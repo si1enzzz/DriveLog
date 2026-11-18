@@ -12,92 +12,148 @@ public class DatabaseService
     private static DatabaseService? _instance;
     public static DatabaseService Instance => _instance ??= new DatabaseService();
 
-    private readonly SQLiteConnection _db;
+    private readonly SQLiteConnection? _db;
 
     public DatabaseService(string? customPath = null)
     {
-        string dbPath = customPath ?? GetDefaultDbPath();
-        var directory = Path.GetDirectoryName(dbPath);
-        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+        try
         {
-            Directory.CreateDirectory(directory);
-        }
+            string dbPath = customPath ?? GetDefaultDbPath();
+            var directory = Path.GetDirectoryName(dbPath);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
 
-        _db = new SQLiteConnection(dbPath, SQLiteOpenFlags.ReadWrite | SQLiteOpenFlags.Create | SQLiteOpenFlags.FullMutex);
-        _db.CreateTable<Vehicle>();
-        _db.CreateTable<ServiceRecord>();
+            _db = new SQLiteConnection(dbPath, SQLiteOpenFlags.ReadWrite | SQLiteOpenFlags.Create | SQLiteOpenFlags.FullMutex);
+            _db.CreateTable<Vehicle>();
+            _db.CreateTable<ServiceRecord>();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[DatabaseService] Init error: {ex}");
+        }
     }
 
     private static string GetDefaultDbPath()
     {
-        string appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        return Path.Combine(appData, "AutoCareApp", "autocare.db");
+        string basePath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        if (string.IsNullOrEmpty(basePath))
+        {
+            basePath = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+        }
+
+#if ANDROID
+        return Path.Combine(basePath, "autocare.db");
+#else
+        return Path.Combine(basePath, "AutoCareApp", "autocare.db");
+#endif
     }
 
     // --- ОПЕРАЦИИ С АВТОМОБИЛЯМИ ---
 
     public List<Vehicle> GetAllVehicles()
     {
-        var vehicles = _db.Table<Vehicle>().ToList();
-        foreach (var v in vehicles)
+        if (_db == null) return new List<Vehicle>();
+        try
         {
-            var records = GetRecordsForVehicle(v.Id);
-            v.Records.Clear();
-            foreach (var r in records)
+            var vehicles = _db.Table<Vehicle>().ToList();
+            foreach (var v in vehicles)
             {
-                v.Records.Add(r);
+                var records = GetRecordsForVehicle(v.Id);
+                v.Records.Clear();
+                foreach (var r in records)
+                {
+                    v.Records.Add(r);
+                }
             }
+            return vehicles;
         }
-        return vehicles;
+        catch
+        {
+            return new List<Vehicle>();
+        }
     }
 
     public int SaveVehicle(Vehicle vehicle)
     {
-        if (vehicle.Id == 0)
+        if (_db == null) return vehicle.Id;
+        try
         {
-            _db.Insert(vehicle);
+            if (vehicle.Id == 0)
+            {
+                _db.Insert(vehicle);
+            }
+            else
+            {
+                _db.Update(vehicle);
+            }
+            return vehicle.Id;
         }
-        else
+        catch
         {
-            _db.Update(vehicle);
+            return vehicle.Id;
         }
-        return vehicle.Id;
     }
 
     public void DeleteVehicle(int vehicleId)
     {
-        // Каскадное удаление: сначала удаляем все записи ТО этой машины
-        _db.Table<ServiceRecord>().Delete(r => r.VehicleId == vehicleId);
-        // Затем удаляем сам автомобиль
-        _db.Delete<Vehicle>(vehicleId);
+        if (_db == null) return;
+        try
+        {
+            _db.Table<ServiceRecord>().Delete(r => r.VehicleId == vehicleId);
+            _db.Delete<Vehicle>(vehicleId);
+        }
+        catch { }
     }
 
     // --- ОПЕРАЦИИ С ЗАПИСЯМИ ТО ---
 
     public List<ServiceRecord> GetRecordsForVehicle(int vehicleId)
     {
-        return _db.Table<ServiceRecord>()
-                  .Where(r => r.VehicleId == vehicleId)
-                  .OrderByDescending(r => r.Date)
-                  .ThenByDescending(r => r.Id)
-                  .ToList();
+        if (_db == null) return new List<ServiceRecord>();
+        try
+        {
+            return _db.Table<ServiceRecord>()
+                      .Where(r => r.VehicleId == vehicleId)
+                      .OrderByDescending(r => r.Date)
+                      .ThenByDescending(r => r.Id)
+                      .ToList();
+        }
+        catch
+        {
+            return new List<ServiceRecord>();
+        }
     }
 
     public int SaveRecord(ServiceRecord record)
     {
-        if (record.Id == 0)
+        if (_db == null) return record.Id;
+        try
         {
-            _db.Insert(record);
+            if (record.Id == 0)
+            {
+                _db.Insert(record);
+            }
+            else
+            {
+                _db.Update(record);
+            }
+            return record.Id;
         }
-        else
+        catch
         {
-            _db.Update(record);
+            return record.Id;
         }
-        return record.Id;
     }
 
     public void DeleteRecord(int recordId)
     {
-        _db.Delete<ServiceRecord>(recordId);
+        if (_db == null) return;
+        try
+        {
+            _db.Delete<ServiceRecord>(recordId);
+        }
+        catch { }
     }
 }

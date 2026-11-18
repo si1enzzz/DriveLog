@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:installLocation="auto">
+  <application android:allowBackup="true" 
+               android:icon="@mipmap/appicon" 
+               android:label="AutoCare" 
+               android:roundIcon="@mipmap/appicon_round" 
+               android:theme="@style/MyTheme.NoActionBar"
+               android:supportsRtl="true">
+  </application>
+  <uses-permission android:name="android.permission.INTERNET" />
+</manifest>
