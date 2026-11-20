@@ -18,9 +18,9 @@ public sealed class Program
             .UseAndroid()
 #else
             .UsePlatformDetect()
-#endif
 #if DEBUG
             .WithDeveloperTools()
+#endif
 #endif
             .WithInterFont()
             .LogToTrace();

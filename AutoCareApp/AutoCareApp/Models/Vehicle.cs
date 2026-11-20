@@ -34,6 +34,10 @@ public partial class Vehicle : ObservableObject
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(SubDetails))]
+    public partial int Horsepower { get; set; } = 0;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SubDetails))]
     public partial string Color { get; set; } = string.Empty;
 
     [ObservableProperty]
@@ -62,6 +66,7 @@ public partial class Vehicle : ObservableObject
             var details = new List<string>();
             if (!string.IsNullOrWhiteSpace(Generation)) details.Add(Generation);
             if (!string.IsNullOrWhiteSpace(EngineVolume)) details.Add($"{EngineVolume} л");
+            if (Horsepower > 0) details.Add($"{Horsepower} л.с.");
             if (Year > 1900) details.Add($"{Year} г.в.");
             if (!string.IsNullOrWhiteSpace(Color)) details.Add(Color);
 
@@ -81,4 +86,6 @@ public partial class Vehicle : ObservableObject
     {
         Records.CollectionChanged += (_, _) => OnPropertyChanged(nameof(TotalSpent));
     }
+
+    public void NotifyTotalSpentChanged() => OnPropertyChanged(nameof(TotalSpent));
 }

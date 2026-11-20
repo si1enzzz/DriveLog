@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="470" d:DesignHeight="880"
-             x:Class="AutoCareApp.Views.MainView"
+             x:Class="AutoCareApp.Views.MainView" x:Name="RootView"
              x:DataType="vm:MainViewModel"
              Background="{Binding BgColor}">
 
@@ -19,6 +19,7 @@
 
         <Style Selector="AutoCompleteBox">
             <Setter Property="Height" Value="38" />
+            <Setter Property="MaxDropDownHeight" Value="150" />
         </Style>
 
         <Style Selector="NumericUpDown">
@@ -34,10 +35,25 @@
             <Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
 
+        <Style Selector="ComboBoxItem">
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Margin" Value="2" />
+        </Style>
+
+        <Style Selector="ComboBoxItem:pointerover /template/ ContentPresenter">
+            <Setter Property="CornerRadius" Value="8" />
+        </Style>
+
+        <Style Selector="ComboBoxItem:selected /template/ ContentPresenter">
+            <Setter Property="CornerRadius" Value="8" />
+        </Style>
+
         <Style Selector="Button">
             <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="HorizontalContentAlignment" Value="Center" />
         </Style>
+
+
 
         <Style Selector="DatePicker">
             <Setter Property="CornerRadius" Value="8" />
@@ -84,6 +100,16 @@
                             Margin="0, 0, 10, 0"
                             HorizontalContentAlignment="Center"
                             VerticalContentAlignment="Center">
+                        <Button.Styles>
+                            <Style Selector="Button:pointerover /template/ ContentPresenter">
+                                <Setter Property="Background" Value="#0A5CE0" />
+                                <Setter Property="CornerRadius" Value="22" />
+                            </Style>
+                            <Style Selector="Button:pressed /template/ ContentPresenter">
+                                <Setter Property="Background" Value="#05378A" />
+                                <Setter Property="CornerRadius" Value="22" />
+                            </Style>
+                        </Button.Styles>
                         <TextBlock Text="+" FontSize="24" FontWeight="Black" Margin="0, -2, 0, 0" />
                     </Button>
 
@@ -95,14 +121,36 @@
                             CornerRadius="22"
                             Height="44"
                             Margin="0, 0, 10, 0"
-                            Padding="12, 0">
+                            Padding="8, 0">
                         <ComboBox ItemsSource="{Binding Vehicles}" 
                                   SelectedItem="{Binding SelectedVehicle}"
                                   HorizontalAlignment="Stretch"
                                   VerticalAlignment="Center"
                                   Background="Transparent"
                                   BorderThickness="0"
+                                  CornerRadius="20"
                                   PlaceholderText="{Binding Strings.GarageEmptyPlaceholder}">
+                            <ComboBox.Styles>
+                                <Style Selector="ComboBox:pointerover">
+                                    <Setter Property="Background" Value="Transparent" />
+                                    <Setter Property="CornerRadius" Value="20" />
+                                </Style>
+                                <Style Selector="ComboBox:pressed">
+                                    <Setter Property="Background" Value="Transparent" />
+                                    <Setter Property="CornerRadius" Value="20" />
+                                </Style>
+                                <Style Selector="ComboBoxItem">
+                                    <Setter Property="CornerRadius" Value="10" />
+                                    <Setter Property="Margin" Value="4, 2" />
+                                    <Setter Property="Padding" Value="12, 8" />
+                                </Style>
+                                <Style Selector="ComboBoxItem:selected /template/ ContentPresenter">
+                                    <Setter Property="CornerRadius" Value="10" />
+                                </Style>
+                                <Style Selector="ComboBoxItem:pointerover /template/ ContentPresenter">
+                                    <Setter Property="CornerRadius" Value="10" />
+                                </Style>
+                            </ComboBox.Styles>
                             <ComboBox.ItemTemplate>
                                 <DataTemplate x:DataType="m:Vehicle">
                                     <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
@@ -124,6 +172,16 @@
                             CornerRadius="22"
                             HorizontalContentAlignment="Center"
                             VerticalContentAlignment="Center">
+                        <Button.Styles>
+                            <Style Selector="Button:pointerover /template/ ContentPresenter">
+                                <Setter Property="Background" Value="{Binding CardBorderColor}" />
+                                <Setter Property="CornerRadius" Value="22" />
+                            </Style>
+                            <Style Selector="Button:pressed /template/ ContentPresenter">
+                                <Setter Property="Background" Value="{Binding CardBorderColor}" />
+                                <Setter Property="CornerRadius" Value="22" />
+                            </Style>
+                        </Button.Styles>
                         <PathIcon Data="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
                                   Width="18" Height="18"
                                   Foreground="#E03E3E" />
@@ -139,11 +197,37 @@
                             BorderBrush="{Binding CardBorderColor}"
                             BorderThickness="1">
                         <StackPanel Spacing="10">
-                            <!-- Название авто -->
-                            <TextBlock Text="{Binding SelectedVehicle.Title}" FontSize="24" FontWeight="Bold" Foreground="{Binding TextPrimaryColor}" />
+                            <!-- Название авто и кнопка редактирования (карандашик) -->
+                            <Grid ColumnDefinitions="*, Auto">
+                                <TextBlock Text="{Binding SelectedVehicle.Title}" FontSize="24" FontWeight="Bold" Foreground="{Binding TextPrimaryColor}" VerticalAlignment="Center" />
+                                <Button Grid.Column="1"
+                                        Command="{Binding EditCurrentVehicleCommand}"
+                                        ToolTip.Tip="{Binding Strings.EditVehicle}"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Width="36" Height="36"
+                                        CornerRadius="18"
+                                        Padding="0"
+                                        HorizontalContentAlignment="Center"
+                                        VerticalContentAlignment="Center">
+                                    <Button.Styles>
+                                        <Style Selector="Button:pointerover /template/ ContentPresenter">
+                                            <Setter Property="Background" Value="{Binding CardBorderColor}" />
+                                            <Setter Property="CornerRadius" Value="18" />
+                                        </Style>
+                                        <Style Selector="Button:pressed /template/ ContentPresenter">
+                                            <Setter Property="Background" Value="{Binding CardBorderColor}" />
+                                            <Setter Property="CornerRadius" Value="18" />
+                                        </Style>
+                                    </Button.Styles>
+                                    <PathIcon Data="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
+                                              Width="18" Height="18"
+                                              Foreground="{Binding TextSecondaryColor}" />
+                                </Button>
+                            </Grid>
                             
                             <!-- Характеристики (поколение, двигатель, год, цвет) -->
-                            <TextBlock Text="{Binding SelectedVehicle.SubDetails}" Foreground="{Binding TextSecondaryColor}" FontSize="13" />
+                            <TextBlock Text="{Binding SelectedVehicle.SubDetails}" Foreground="{Binding TextSecondaryColor}" FontSize="13" TextWrapping="Wrap" />
 
                             <!-- Пробег (синий) и расходы (белый в темной теме / черный в светлой) -->
                             <Grid ColumnDefinitions="*, Auto" Margin="0, 6, 0, 0">
@@ -170,32 +254,80 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="m:ServiceRecord">
                                 <!-- Карточка одной замены -->
-                                <Border Background="{Binding $parent[Window].((vm:MainViewModel)DataContext).CardColor}" 
+                                <Border Background="{Binding #RootView.((vm:MainViewModel)DataContext).CardColor}" 
                                         CornerRadius="14" 
                                         Margin="0, 0, 0, 10" 
                                         Padding="16"
-                                        BorderBrush="{Binding $parent[Window].((vm:MainViewModel)DataContext).CardBorderColor}"
+                                        BorderBrush="{Binding #RootView.((vm:MainViewModel)DataContext).CardBorderColor}"
                                         BorderThickness="1">
                                     <StackPanel Spacing="8">
-                                        <!-- Название детали и общая стоимость (синий акцент) -->
-                                        <Grid ColumnDefinitions="*, Auto">
+                                        <!-- Название детали, общая стоимость и кнопки действий -->
+                                        <Grid ColumnDefinitions="*, Auto, Auto">
                                             <TextBlock Text="{Binding PartTitle}" FontSize="15" FontWeight="SemiBold" 
-                                                       Foreground="{Binding $parent[Window].((vm:MainViewModel)DataContext).TextPrimaryColor}" TextWrapping="Wrap" />
+                                                       Foreground="{Binding #RootView.((vm:MainViewModel)DataContext).TextPrimaryColor}" TextWrapping="Wrap" VerticalAlignment="Center" />
                                             <TextBlock Grid.Column="1" Text="{Binding TotalCost, StringFormat='{}{0:N0} ₽'}" 
-                                                       FontSize="16" FontWeight="Bold" Foreground="#074CBA" Margin="8,0,0,0" />
+                                                       FontSize="16" FontWeight="Bold" Foreground="#074CBA" Margin="8,0,8,0" VerticalAlignment="Center" />
+                                            
+                                            <!-- Кнопки: Редактировать (карандашик) и Удалить (корзинка) -->
+                                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+                                                <Button Command="{Binding #RootView.((vm:MainViewModel)DataContext).EditRecordCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        ToolTip.Tip="{Binding #RootView.((vm:MainViewModel)DataContext).Strings.EditRecord}"
+                                                        Background="Transparent"
+                                                        BorderThickness="0"
+                                                        Padding="4"
+                                                        Width="30" Height="30"
+                                                        CornerRadius="15">
+                                                    <Button.Styles>
+                                                        <Style Selector="Button:pointerover /template/ ContentPresenter">
+                                                            <Setter Property="Background" Value="{Binding #RootView.((vm:MainViewModel)DataContext).CardBorderColor}" />
+                                                            <Setter Property="CornerRadius" Value="15" />
+                                                        </Style>
+                                                        <Style Selector="Button:pressed /template/ ContentPresenter">
+                                                            <Setter Property="Background" Value="{Binding #RootView.((vm:MainViewModel)DataContext).CardBorderColor}" />
+                                                            <Setter Property="CornerRadius" Value="15" />
+                                                        </Style>
+                                                    </Button.Styles>
+                                                    <PathIcon Data="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
+                                                              Width="14" Height="14"
+                                                              Foreground="{Binding #RootView.((vm:MainViewModel)DataContext).TextSecondaryColor}" />
+                                                </Button>
+
+                                                <Button Command="{Binding #RootView.((vm:MainViewModel)DataContext).DeleteRecordCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        Background="Transparent"
+                                                        BorderThickness="0"
+                                                        Padding="4"
+                                                        Width="30" Height="30"
+                                                        CornerRadius="15">
+                                                    <Button.Styles>
+                                                        <Style Selector="Button:pointerover /template/ ContentPresenter">
+                                                            <Setter Property="Background" Value="#33E03E3E" />
+                                                            <Setter Property="CornerRadius" Value="15" />
+                                                        </Style>
+                                                        <Style Selector="Button:pressed /template/ ContentPresenter">
+                                                            <Setter Property="Background" Value="#66E03E3E" />
+                                                            <Setter Property="CornerRadius" Value="15" />
+                                                        </Style>
+                                                    </Button.Styles>
+                                                    <PathIcon Data="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+                                                              Width="14" Height="14"
+                                                              Foreground="#E03E3E" />
+                                                </Button>
+                                            </StackPanel>
                                         </Grid>
 
                                         <!-- Информация: Пробег, Умная дата, Сервис -->
                                         <WrapPanel Orientation="Horizontal">
-                                            <TextBlock Text="{Binding Mileage, StringFormat='{}{0:N0} км'}" Foreground="{Binding $parent[Window].((vm:MainViewModel)DataContext).TextSecondaryColor}" FontSize="13" />
-                                            <TextBlock Text="  ·  " Foreground="{Binding $parent[Window].((vm:MainViewModel)DataContext).TextSecondaryColor}" FontSize="13" />
-                                            <TextBlock Text="{Binding DisplayDate}" Foreground="{Binding $parent[Window].((vm:MainViewModel)DataContext).TextSecondaryColor}" FontSize="13" />
-                                            <TextBlock Text="  ·  " Foreground="{Binding $parent[Window].((vm:MainViewModel)DataContext).TextSecondaryColor}" FontSize="13" />
-                                            <TextBlock Text="{Binding ServiceName}" Foreground="{Binding $parent[Window].((vm:MainViewModel)DataContext).TextSecondaryColor}" FontSize="13" />
+                                            <TextBlock Text="{Binding Mileage, StringFormat='{}{0:N0} км'}" Foreground="{Binding #RootView.((vm:MainViewModel)DataContext).TextSecondaryColor}" FontSize="13" />
+                                            <TextBlock Text="  ·  " Foreground="{Binding #RootView.((vm:MainViewModel)DataContext).TextSecondaryColor}" FontSize="13" />
+                                            <TextBlock Text="{Binding DisplayDate}" Foreground="{Binding #RootView.((vm:MainViewModel)DataContext).TextSecondaryColor}" FontSize="13" />
+                                            <TextBlock Text="  ·  " Foreground="{Binding #RootView.((vm:MainViewModel)DataContext).TextSecondaryColor}" FontSize="13" />
+                                            <TextBlock Text="{Binding ServiceName}" Foreground="{Binding #RootView.((vm:MainViewModel)DataContext).TextSecondaryColor}" FontSize="13" />
                                         </WrapPanel>
 
                                         <!-- Цены: деталь + работа -->
-                                        <TextBlock Foreground="{Binding $parent[Window].((vm:MainViewModel)DataContext).TextSecondaryColor}" FontSize="12">
+                                        <TextBlock Foreground="{Binding #RootView.((vm:MainViewModel)DataContext).TextSecondaryColor}" FontSize="12">
                                             <TextBlock.Text>
                                                 <MultiBinding StringFormat="Деталь: {0:N0} ₽   Работа: {1:N0} ₽">
                                                     <Binding Path="PartCost" />
@@ -206,7 +338,7 @@
 
                                         <!-- Заметка (если есть) -->
                                         <TextBlock Text="{Binding Notes}" 
-                                                   Foreground="{Binding $parent[Window].((vm:MainViewModel)DataContext).TextSecondaryColor}" 
+                                                   Foreground="{Binding #RootView.((vm:MainViewModel)DataContext).TextSecondaryColor}" 
                                                    FontSize="12" FontStyle="Italic" TextWrapping="Wrap" />
                                     </StackPanel>
                                 </Border>
@@ -262,6 +394,7 @@
                 Margin="0, 0, 20, 24"
                 Width="54" Height="54"
                 CornerRadius="27"
+                ClipToBounds="True"
                 BoxShadow="0 6 20 #80074CBA">
             <Button Command="{Binding ToggleAddFormCommand}"
                     Width="54" Height="54"
@@ -270,7 +403,19 @@
                     Foreground="White"
                     BorderThickness="0"
                     Padding="0"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
                     ToolTip.Tip="{Binding Strings.NewRecord}">
+                <Button.Styles>
+                    <Style Selector="Button:pointerover /template/ ContentPresenter">
+                        <Setter Property="Background" Value="#0A5CE0" />
+                        <Setter Property="CornerRadius" Value="27" />
+                    </Style>
+                    <Style Selector="Button:pressed /template/ ContentPresenter">
+                        <Setter Property="Background" Value="#05378A" />
+                        <Setter Property="CornerRadius" Value="27" />
+                    </Style>
+                </Button.Styles>
                 <TextBlock Text="+" FontSize="28" FontWeight="Black" Margin="0, -2, 0, 0" HorizontalAlignment="Center" VerticalAlignment="Center" />
             </Button>
         </Border>
@@ -492,8 +637,19 @@
                 <Button Command="{Binding SelectGarageTabCommand}"
                         Background="Transparent"
                         BorderThickness="0"
+                        CornerRadius="23"
                         Padding="0"
                         VerticalAlignment="Center">
+                    <Button.Styles>
+                        <Style Selector="Button:pointerover /template/ ContentPresenter">
+                            <Setter Property="Background" Value="Transparent" />
+                            <Setter Property="CornerRadius" Value="23" />
+                        </Style>
+                        <Style Selector="Button:pressed /template/ ContentPresenter">
+                            <Setter Property="Background" Value="Transparent" />
+                            <Setter Property="CornerRadius" Value="23" />
+                        </Style>
+                    </Button.Styles>
                     <Border Background="{Binding GarageTabPillColor}"
                             CornerRadius="23"
                             Padding="22, 6">
@@ -514,8 +670,19 @@
                 <Button Command="{Binding SelectAccountTabCommand}"
                         Background="Transparent"
                         BorderThickness="0"
+                        CornerRadius="23"
                         Padding="0"
                         VerticalAlignment="Center">
+                    <Button.Styles>
+                        <Style Selector="Button:pointerover /template/ ContentPresenter">
+                            <Setter Property="Background" Value="Transparent" />
+                            <Setter Property="CornerRadius" Value="23" />
+                        </Style>
+                        <Style Selector="Button:pressed /template/ ContentPresenter">
+                            <Setter Property="Background" Value="Transparent" />
+                            <Setter Property="CornerRadius" Value="23" />
+                        </Style>
+                    </Button.Styles>
                     <Border Background="{Binding AccountTabPillColor}"
                             CornerRadius="23"
                             Padding="22, 6">
@@ -555,16 +722,15 @@
             </Button>
         </Border>
 
-        <!-- СЛОЙ 2: Модальные окна поверх затемнения -->
+        <!-- СЛОЙ 2: Модальные окна поверх затемнения (прокручиваются пальцем над клавиатурой) -->
         <ScrollViewer Grid.Row="0" Grid.RowSpan="2"
                       IsVisible="{Binding IsAnyFormOpen}"
-                      VerticalAlignment="Center"
-                      HorizontalAlignment="Center"
-                      MaxWidth="440"
-                      MaxHeight="780"
-                      Margin="16">
-            <Panel>
-                <!-- ФОРМА ДОБАВЛЕНИЯ НОВОГО АВТО -->
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
+                      VerticalAlignment="Stretch"
+                      HorizontalAlignment="Stretch">
+            <Panel HorizontalAlignment="Center" VerticalAlignment="Top" MaxWidth="440" Margin="16, 20, 16, 420">
+                <!-- ФОРМА ДОБАВЛЕНИЯ / РЕДАКТИРОВАНИЯ АВТО -->
                 <Border Background="{Binding CardColor}" 
                         CornerRadius="16" 
                         Padding="18"
@@ -573,26 +739,28 @@
                         BoxShadow="0 8 32 #80000000"
                         IsVisible="{Binding IsAddingVehicle}">
                     <StackPanel Spacing="10">
-                        <TextBlock Text="{Binding Strings.NewVehicle}" FontSize="18" FontWeight="Bold" Foreground="{Binding TextPrimaryColor}" />
+                        <TextBlock Text="{Binding VehicleFormTitle}" FontSize="18" FontWeight="Bold" Foreground="{Binding TextPrimaryColor}" />
                         
                         <TextBlock Text="{Binding VehicleErrorMessage}" Foreground="#E03E3E" FontWeight="SemiBold" FontSize="13" />
 
-                        <!-- Марка и Модель (обе с подсказками Avito) -->
+                        <!-- Марка и Модель (обе с подсказками и поддержкой русского/английского) -->
                         <Grid ColumnDefinitions="*, *">
                             <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,5,0">
                                 <TextBlock Text="{Binding Strings.Brand}" Foreground="{Binding TextSecondaryColor}" FontSize="12" />
                                 <AutoCompleteBox Text="{Binding NewBrand}" 
                                                  ItemsSource="{Binding BrandSuggestions}" 
-                                                 FilterMode="Contains"
+                                                 FilterMode="None"
                                                  MinimumPrefixLength="0"
+                                                 MaxDropDownHeight="140"
                                                  PlaceholderText="Toyota, Lada, Kia..." />
                             </StackPanel>
                             <StackPanel Grid.Column="1" Spacing="4" Margin="5,0,0,0">
                                 <TextBlock Text="{Binding Strings.Model}" Foreground="{Binding TextSecondaryColor}" FontSize="12" />
                                 <AutoCompleteBox Text="{Binding NewModel}" 
                                                  ItemsSource="{Binding ModelSuggestions}" 
-                                                 FilterMode="Contains"
+                                                 FilterMode="None"
                                                  MinimumPrefixLength="0"
+                                                 MaxDropDownHeight="140"
                                                  PlaceholderText="Vesta, Rio, Camry..." />
                             </StackPanel>
                         </Grid>
@@ -603,8 +771,9 @@
                                 <TextBlock Text="{Binding Strings.Generation}" Foreground="{Binding TextSecondaryColor}" FontSize="12" />
                                 <AutoCompleteBox Text="{Binding NewGeneration}" 
                                                  ItemsSource="{Binding GenerationSuggestions}" 
-                                                 FilterMode="Contains"
+                                                 FilterMode="None"
                                                  MinimumPrefixLength="0"
+                                                 MaxDropDownHeight="140"
                                                  PlaceholderText="I, II Рестайлинг..." />
                             </StackPanel>
                             <StackPanel Grid.Column="1" Spacing="4" Margin="5,0,0,0">
@@ -613,27 +782,48 @@
                             </StackPanel>
                         </Grid>
 
-                        <!-- Объем двигателя и Цвет -->
+                        <!-- Двигатель (объем с подсказками) и Мощность (л.с.) -->
                         <Grid ColumnDefinitions="*, *">
                             <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,5,0">
                                 <TextBlock Text="{Binding Strings.Engine}" Foreground="{Binding TextSecondaryColor}" FontSize="12" />
-                                <TextBox Text="{Binding NewEngineVolume}" PlaceholderText="1.6, 2.0, 1.5T..." />
+                                <AutoCompleteBox Text="{Binding NewEngineVolume}" 
+                                                 ItemsSource="{Binding EngineSuggestions}" 
+                                                 FilterMode="None"
+                                                 MinimumPrefixLength="0"
+                                                 MaxDropDownHeight="140"
+                                                 PlaceholderText="1.6, 2.0, 1.5 (115 л.с.)..." />
                             </StackPanel>
                             <StackPanel Grid.Column="1" Spacing="4" Margin="5,0,0,0">
-                                <TextBlock Text="{Binding Strings.Color}" Foreground="{Binding TextSecondaryColor}" FontSize="12" />
-                                <TextBox Text="{Binding NewColor}" PlaceholderText="Белый, Черный..." />
+                                <TextBlock Text="{Binding Strings.Horsepower}" Foreground="{Binding TextSecondaryColor}" FontSize="12" />
+                                <AutoCompleteBox Text="{Binding NewHorsepower}" 
+                                                 ItemsSource="{Binding HorsepowerSuggestions}" 
+                                                 FilterMode="Contains"
+                                                 MinimumPrefixLength="0"
+                                                 MaxDropDownHeight="140"
+                                                 PlaceholderText="105, 125, 150..." />
                             </StackPanel>
                         </Grid>
 
-                        <!-- Начальный пробег -->
-                        <StackPanel Spacing="4">
-                            <TextBlock Text="{Binding Strings.MileageKm}" Foreground="{Binding TextSecondaryColor}" FontSize="12" />
-                            <NumericUpDown Value="{Binding NewVehicleMileage}" Minimum="0" FormatString="N0" HorizontalAlignment="Stretch" />
-                        </StackPanel>
+                        <!-- Цвет и Начальный пробег -->
+                        <Grid ColumnDefinitions="*, *">
+                            <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,5,0">
+                                <TextBlock Text="{Binding Strings.Color}" Foreground="{Binding TextSecondaryColor}" FontSize="12" />
+                                <AutoCompleteBox Text="{Binding NewColor}" 
+                                                 ItemsSource="{Binding ColorSuggestions}" 
+                                                 FilterMode="Contains"
+                                                 MinimumPrefixLength="0"
+                                                 MaxDropDownHeight="140"
+                                                 PlaceholderText="Белый, Черный, Серебристый..." />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Spacing="4" Margin="5,0,0,0">
+                                <TextBlock Text="{Binding Strings.MileageKm}" Foreground="{Binding TextSecondaryColor}" FontSize="12" />
+                                <NumericUpDown Value="{Binding NewVehicleMileage}" Minimum="0" FormatString="N0" HorizontalAlignment="Stretch" />
+                            </StackPanel>
+                        </Grid>
 
-                        <!-- Кнопки формы авто: Добавить и Отмена -->
+                        <!-- Кнопки формы авто: Сохранить/Добавить и Отмена -->
                         <Grid ColumnDefinitions="*, *" Margin="0, 6, 0, 0">
-                            <Button Grid.Column="0" Content="{Binding Strings.Add}"
+                            <Button Grid.Column="0" Content="{Binding VehicleFormSubmitButtonText}"
                                     Command="{Binding AddVehicleCommand}"
                                     Background="#074CBA" Foreground="White"
                                     FontWeight="Bold" Height="40" CornerRadius="8"
@@ -650,7 +840,7 @@
                     </StackPanel>
                 </Border>
 
-                <!-- ФОРМА ДОБАВЛЕНИЯ ЗАПИСИ О ЗАМЕНЕ -->
+                <!-- ФОРМА ДОБАВЛЕНИЯ / РЕДАКТИРОВАНИЯ ЗАПИСИ О ЗАМЕНЕ -->
                 <Border Background="{Binding CardColor}" 
                         CornerRadius="16" 
                         Padding="18"
@@ -659,7 +849,7 @@
                         BoxShadow="0 8 32 #80000000"
                         IsVisible="{Binding IsAddingRecord}">
                     <StackPanel Spacing="12">
-                        <TextBlock Text="{Binding Strings.NewRecord}" FontSize="18" FontWeight="Bold" Foreground="{Binding TextPrimaryColor}" />
+                        <TextBlock Text="{Binding RecordFormTitle}" FontSize="18" FontWeight="Bold" Foreground="{Binding TextPrimaryColor}" />
 
                         <TextBlock Text="{Binding RecordErrorMessage}" Foreground="#E03E3E" FontWeight="SemiBold" FontSize="13" />
 
@@ -707,7 +897,7 @@
 
                         <!-- Кнопки формы записи: Сохранить и Отмена -->
                         <Grid ColumnDefinitions="*, *" Margin="0, 6, 0, 0">
-                            <Button Grid.Column="0" Content="{Binding Strings.SaveRecord}"
+                            <Button Grid.Column="0" Content="{Binding RecordFormSubmitButtonText}"
                                     Command="{Binding SaveRecordCommand}"
                                     HorizontalAlignment="Stretch"
                                     HorizontalContentAlignment="Center"

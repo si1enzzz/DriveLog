@@ -758,6 +758,139 @@ public static class CarCatalogService
             .Replace('У', 'Y').Replace('у', 'y');
     }
 
+    // Русские синонимы и транслитерация для популярных марок
+    private static readonly Dictionary<string, string[]> BrandRussianAliases = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["Kia"] = new[] { "киа", "кия" },
+        ["Hyundai"] = new[] { "хендай", "хёндай", "хюндай", "хундай", "хендэ", "хундаи" },
+        ["Toyota"] = new[] { "тойота", "тоета" },
+        ["Lada"] = new[] { "лада", "ваз", "жигули" },
+        ["Lada (ВАЗ)"] = new[] { "лада", "ваз", "жигули" },
+        ["Volkswagen"] = new[] { "фольксваген", "фольц", "фолькс", "вв", "vw" },
+        ["BMW"] = new[] { "бмв" },
+        ["Mercedes-Benz"] = new[] { "мерседес", "мерин", "мерс", "бенц" },
+        ["Ford"] = new[] { "форд" },
+        ["Audi"] = new[] { "ауди" },
+        ["Renault"] = new[] { "рено" },
+        ["Nissan"] = new[] { "ниссан", "нисан" },
+        ["Chevrolet"] = new[] { "шевроле", "шевролет", "шеви" },
+        ["Mazda"] = new[] { "мазда" },
+        ["Mitsubishi"] = new[] { "митсубиси", "мицубиси", "митсубиши", "мицубиши" },
+        ["Skoda"] = new[] { "шкода" },
+        ["Subaru"] = new[] { "субару" },
+        ["Honda"] = new[] { "хонда" },
+        ["Geely"] = new[] { "джили" },
+        ["Chery"] = new[] { "чери", "черри" },
+        ["Haval"] = new[] { "хавал", "хавейл" },
+        ["Changan"] = new[] { "чанган" },
+        ["Omoda"] = new[] { "омода" },
+        ["Exeed"] = new[] { "эксид", "эксийд" },
+        ["Lexus"] = new[] { "лексус" },
+        ["Infiniti"] = new[] { "инфинити" },
+        ["Porsche"] = new[] { "порше", "порш" },
+        ["Volvo"] = new[] { "вольво" },
+        ["Suzuki"] = new[] { "сузуки", "судзуки" },
+        ["Peugeot"] = new[] { "пежо" },
+        ["Citroen"] = new[] { "ситроен" },
+        ["Land Rover"] = new[] { "ленд ровер", "лэнд ровер", "рендж ровер" },
+        ["УАЗ"] = new[] { "uaz", "уаз" },
+        ["ГАЗ"] = new[] { "gaz", "газ" },
+    };
+
+    // Русские синонимы и транслитерация для популярных моделей
+    private static readonly Dictionary<string, string[]> ModelRussianAliases = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["Rio"] = new[] { "рио" },
+        ["Solaris"] = new[] { "солярис" },
+        ["Vesta"] = new[] { "веста" },
+        ["Granta"] = new[] { "гранта" },
+        ["Focus"] = new[] { "фокус" },
+        ["Camry"] = new[] { "камри" },
+        ["Corolla"] = new[] { "королла", "корола" },
+        ["RAV4"] = new[] { "рав4", "рав 4", "рафик" },
+        ["Polo"] = new[] { "поло" },
+        ["Creta"] = new[] { "крета" },
+        ["Duster"] = new[] { "дастер" },
+        ["Logan"] = new[] { "логан" },
+        ["Sandero"] = new[] { "сандеро" },
+        ["Niva"] = new[] { "нива" },
+        ["Octavia"] = new[] { "октавия" },
+        ["Rapid"] = new[] { "рапид" },
+        ["Tiguan"] = new[] { "тигуан" },
+        ["K5"] = new[] { "к5" },
+        ["K3"] = new[] { "к3" },
+        ["Sportage"] = new[] { "спортейдж", "спортидж", "спортаж" },
+        ["Cruze"] = new[] { "круз" },
+        ["Astra"] = new[] { "астра" },
+        ["Mondeo"] = new[] { "мондео" },
+        ["Kuga"] = new[] { "куга" },
+        ["Qashqai"] = new[] { "кашкай" },
+        ["X-Trail"] = new[] { "икстрейл", "х трейл", "х-трейл" },
+        ["Outlander"] = new[] { "аутлендер", "аут" },
+        ["Lancer"] = new[] { "лансер" },
+        ["Tucson"] = new[] { "туссан", "тушкан", "туксон" },
+        ["Santa Fe"] = new[] { "санта фе", "сантафе" },
+        ["Jolion"] = new[] { "джолион", "джулион" },
+        ["Coolray"] = new[] { "кулрей" },
+        ["Tiggo 7 Pro"] = new[] { "тигго 7", "тигго7" },
+        ["Tiggo 4"] = new[] { "тигго 4", "тигго4" },
+    };
+
+    // Определение канонического названия марки с учётом синонимов
+    public static string ResolveCanonicalBrand(string? brand)
+    {
+        if (string.IsNullOrWhiteSpace(brand)) return string.Empty;
+        var clean = brand.Trim();
+        var norm = Normalize(clean);
+
+        // 1. Прямое совпадение
+        var direct = Catalog.Keys.FirstOrDefault(k =>
+            k.Equals(clean, StringComparison.OrdinalIgnoreCase) ||
+            Normalize(k).Equals(norm, StringComparison.OrdinalIgnoreCase));
+        if (direct != null) return direct;
+
+        // 2. Поиск по русским синонимам
+        foreach (var pair in BrandRussianAliases)
+        {
+            if (pair.Value.Any(a => a.Equals(clean, StringComparison.OrdinalIgnoreCase) || clean.StartsWith(a, StringComparison.OrdinalIgnoreCase)))
+            {
+                return pair.Key;
+            }
+        }
+
+        // 3. Подстрока
+        var sub = Catalog.Keys.FirstOrDefault(k =>
+            k.IndexOf(clean, StringComparison.OrdinalIgnoreCase) >= 0 ||
+            clean.IndexOf(k, StringComparison.OrdinalIgnoreCase) >= 0 ||
+            Normalize(k).IndexOf(norm, StringComparison.OrdinalIgnoreCase) >= 0 ||
+            norm.IndexOf(Normalize(k), StringComparison.OrdinalIgnoreCase) >= 0);
+
+        return sub ?? clean;
+    }
+
+    // Фильтрация марок с поддержкой русского ввода (например, «ки» найдет «Kia», «хен» найдет «Hyundai»)
+    public static IReadOnlyList<string> FilterBrands(string? query)
+    {
+        if (string.IsNullOrWhiteSpace(query)) return PopularBrands;
+
+        var q = query.Trim();
+        var normQ = Normalize(q);
+
+        return PopularBrands.Where(brand =>
+        {
+            if (brand.IndexOf(q, StringComparison.OrdinalIgnoreCase) >= 0) return true;
+            if (Normalize(brand).IndexOf(normQ, StringComparison.OrdinalIgnoreCase) >= 0) return true;
+
+            if (BrandRussianAliases.TryGetValue(brand, out var aliases))
+            {
+                return aliases.Any(a => a.IndexOf(q, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                        q.IndexOf(a, StringComparison.OrdinalIgnoreCase) >= 0);
+            }
+
+            return false;
+        }).ToList();
+    }
+
     // Список всех марок в алфавитном порядке
     public static IReadOnlyList<string> PopularBrands => Catalog.Keys.OrderBy(x => x).ToList();
 
@@ -766,23 +899,37 @@ public static class CarCatalogService
     {
         if (string.IsNullOrWhiteSpace(brand)) return Array.Empty<string>();
 
-        var clean = brand.Trim();
-        var norm = Normalize(clean);
-
-        var match = Catalog.Keys.FirstOrDefault(k => 
-            k.Equals(clean, StringComparison.OrdinalIgnoreCase) ||
-            Normalize(k).Equals(norm, StringComparison.OrdinalIgnoreCase) ||
-            k.IndexOf(clean, StringComparison.OrdinalIgnoreCase) >= 0 ||
-            clean.IndexOf(k, StringComparison.OrdinalIgnoreCase) >= 0 ||
-            Normalize(k).IndexOf(norm, StringComparison.OrdinalIgnoreCase) >= 0 ||
-            norm.IndexOf(Normalize(k), StringComparison.OrdinalIgnoreCase) >= 0);
-
-        if (match != null && Catalog.TryGetValue(match, out var models))
+        var canonical = ResolveCanonicalBrand(brand);
+        if (Catalog.TryGetValue(canonical, out var models))
         {
             return models.Select(m => m.Name).ToList();
         }
 
         return Array.Empty<string>();
+    }
+
+    // Фильтрация моделей для выбранной марки с поддержкой русского ввода («фок» найдет «Focus»)
+    public static IReadOnlyList<string> FilterModels(string? brand, string? query)
+    {
+        var models = GetModelsForBrand(brand);
+        if (string.IsNullOrWhiteSpace(query)) return models;
+
+        var q = query.Trim();
+        var normQ = Normalize(q);
+
+        return models.Where(m =>
+        {
+            if (m.IndexOf(q, StringComparison.OrdinalIgnoreCase) >= 0) return true;
+            if (Normalize(m).IndexOf(normQ, StringComparison.OrdinalIgnoreCase) >= 0) return true;
+
+            if (ModelRussianAliases.TryGetValue(m, out var aliases))
+            {
+                return aliases.Any(a => a.IndexOf(q, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                        q.IndexOf(a, StringComparison.OrdinalIgnoreCase) >= 0);
+            }
+
+            return false;
+        }).ToList();
     }
 
     // Получить список поколений для выбранной марки и модели
@@ -821,5 +968,195 @@ public static class CarCatalogService
         }
 
         return Array.Empty<string>();
+    }
+
+    public class EngineInfo
+    {
+        public string Volume { get; set; } = string.Empty;
+        public int Horsepower { get; set; }
+        public string DisplayText => Horsepower > 0 ? $"{Volume} ({Horsepower} л.с.)" : Volume;
+
+        public EngineInfo(string volume, int horsepower)
+        {
+            Volume = volume;
+            Horsepower = horsepower;
+        }
+    }
+
+    // База моторов для популярных моделей
+    private static readonly Dictionary<string, List<EngineInfo>> ModelEngines = new(StringComparer.OrdinalIgnoreCase)
+    {
+        // Kia
+        ["K3"] = new() { new("1.5", 115), new("1.6", 123), new("1.6", 128), new("1.4T", 140), new("2.0", 150) },
+        ["Rio"] = new() { new("1.4", 100), new("1.4", 107), new("1.6", 123) },
+        ["Rio X (X-Line)"] = new() { new("1.4", 100), new("1.6", 123) },
+        ["K5"] = new() { new("2.0", 150), new("2.5", 194), new("1.6T", 180) },
+        ["Optima"] = new() { new("2.0", 150), new("2.4", 188), new("2.0T", 245) },
+        ["Ceed"] = new() { new("1.4", 100), new("1.6", 128), new("1.4T", 140), new("1.5T", 150) },
+        ["Cerato"] = new() { new("1.6", 128), new("2.0", 150) },
+        ["Sportage"] = new() { new("2.0", 150), new("2.4", 184), new("2.5", 190), new("2.0d", 185) },
+        ["Seltos"] = new() { new("1.6", 121), new("1.6", 123), new("2.0", 149), new("1.6T", 177) },
+        ["Sorento"] = new() { new("2.5", 180), new("3.5", 249), new("2.2d", 199) },
+        ["Soul"] = new() { new("1.6", 123), new("2.0", 150), new("1.6T", 200) },
+        ["Picanto"] = new() { new("1.0", 67), new("1.2", 84) },
+        ["Stinger"] = new() { new("2.0T", 197), new("2.0T", 247), new("3.3T", 370) },
+        ["Carnival"] = new() { new("3.5", 249), new("2.2d", 199) },
+        ["Mohave"] = new() { new("3.0d", 249) },
+
+        // Hyundai
+        ["Solaris"] = new() { new("1.4", 100), new("1.4", 107), new("1.6", 123) },
+        ["Creta"] = new() { new("1.6", 121), new("1.6", 123), new("2.0", 149) },
+        ["Elantra"] = new() { new("1.6", 128), new("2.0", 150) },
+        ["Sonata"] = new() { new("2.0", 150), new("2.5", 180) },
+        ["Tucson"] = new() { new("2.0", 150), new("2.5", 190), new("2.0d", 185) },
+        ["Santa Fe"] = new() { new("2.5", 180), new("3.5", 249), new("2.2d", 199) },
+        ["Palisade"] = new() { new("3.5", 249), new("2.2d", 200) },
+
+        // Lada (ВАЗ)
+        ["Vesta"] = new() { new("1.6", 106), new("1.6", 113), new("1.8", 122), new("1.8 Evo", 122) },
+        ["Granta"] = new() { new("1.6", 87), new("1.6", 90), new("1.6", 98), new("1.6", 106) },
+        ["Niva Legend"] = new() { new("1.7", 83) },
+        ["Niva Travel"] = new() { new("1.7", 80) },
+        ["Largus"] = new() { new("1.6", 87), new("1.6", 90), new("1.6", 106) },
+        ["Priora"] = new() { new("1.6", 98), new("1.6", 106) },
+        ["Kalina"] = new() { new("1.4", 89), new("1.6", 87), new("1.6", 98), new("1.6", 106) },
+        ["2114"] = new() { new("1.5", 77), new("1.6", 81) },
+        ["2110"] = new() { new("1.5", 73), new("1.5 16V", 92), new("1.6", 89) },
+        ["2107"] = new() { new("1.5", 72), new("1.6", 74) },
+
+        // Toyota
+        ["Camry"] = new() { new("2.0", 150), new("2.5", 181), new("2.5", 200), new("3.5", 249), new("3.5", 277) },
+        ["Corolla"] = new() { new("1.3", 99), new("1.6", 122), new("1.6", 132), new("1.8", 140) },
+        ["RAV4"] = new() { new("2.0", 146), new("2.0", 149), new("2.5", 180), new("2.5", 199) },
+        ["Land Cruiser Prado"] = new() { new("2.7", 163), new("2.8d", 177), new("2.8d", 200), new("4.0", 249) },
+        ["Land Cruiser 200"] = new() { new("4.6", 309), new("4.5d", 235), new("4.5d", 249) },
+        ["Land Cruiser 300"] = new() { new("3.5", 415), new("3.3d", 299) },
+        ["Highlander"] = new() { new("3.5", 249), new("2.7", 188) },
+
+        // Volkswagen
+        ["Polo"] = new() { new("1.6", 90), new("1.6", 110), new("1.4 TSI", 125) },
+        ["Tiguan"] = new() { new("1.4 TSI", 125), new("1.4 TSI", 150), new("2.0 TSI", 180), new("2.0 TSI", 220), new("2.0 TDI", 150) },
+        ["Passat"] = new() { new("1.4 TSI", 150), new("1.8 TSI", 180), new("2.0 TSI", 220), new("2.0 TDI", 150) },
+        ["Golf"] = new() { new("1.4 TSI", 122), new("1.4 TSI", 150), new("1.6", 110), new("2.0 GTI", 245) },
+        ["Touareg"] = new() { new("3.0 TDI", 245), new("3.0 TDI", 249), new("2.0 TSI", 249), new("3.6", 249) },
+        ["Jetta"] = new() { new("1.6", 110), new("1.4 TSI", 125), new("1.4 TSI", 150) },
+
+        // Skoda
+        ["Octavia"] = new() { new("1.6", 110), new("1.4 TSI", 150), new("1.8 TSI", 180), new("2.0 TSI", 190) },
+        ["Rapid"] = new() { new("1.6", 90), new("1.6", 110), new("1.4 TSI", 125) },
+        ["Kodiaq"] = new() { new("1.4 TSI", 125), new("1.4 TSI", 150), new("2.0 TSI", 180), new("2.0 TDI", 150) },
+        ["Superb"] = new() { new("1.4 TSI", 150), new("2.0 TSI", 190), new("2.0 TSI", 220), new("2.0 TSI", 280) },
+
+        // BMW
+        ["3 серия"] = new() { new("2.0", 156), new("2.0", 184), new("2.0d", 190), new("2.0", 258), new("3.0", 387) },
+        ["5 серия"] = new() { new("2.0", 184), new("2.0d", 190), new("2.0", 249), new("3.0d", 249), new("3.0", 340) },
+        ["X5"] = new() { new("3.0d", 249), new("3.0", 340), new("4.4", 530) },
+        ["X3"] = new() { new("2.0", 184), new("2.0d", 190), new("2.0", 249), new("3.0d", 249) },
+
+        // Mercedes-Benz
+        ["C-Класс"] = new() { new("1.5", 150), new("1.5", 170), new("2.0", 197), new("2.0", 204), new("2.0", 258) },
+        ["E-Класс"] = new() { new("2.0", 197), new("2.0d", 194), new("2.0", 249), new("3.0", 367) },
+
+        // Nissan
+        ["Qashqai"] = new() { new("1.2 DIG-T", 115), new("1.6", 114), new("2.0", 144) },
+        ["X-Trail"] = new() { new("2.0", 144), new("2.5", 171), new("1.6d", 130) },
+        ["Almera"] = new() { new("1.6", 102) },
+        ["Juke"] = new() { new("1.6", 94), new("1.6", 117), new("1.6 DIG-T", 190) },
+
+        // Renault
+        ["Duster"] = new() { new("1.6", 114), new("2.0", 143), new("1.3 TCe", 150), new("1.5 dCi", 109) },
+        ["Logan"] = new() { new("1.6", 82), new("1.6", 102), new("1.6", 113) },
+        ["Sandero"] = new() { new("1.6", 82), new("1.6", 102), new("1.6", 113) },
+        ["Kaptur"] = new() { new("1.6", 114), new("2.0", 143), new("1.3 TCe", 150) },
+        ["Arkana"] = new() { new("1.6", 114), new("1.3 TCe", 150) },
+
+        // Geely
+        ["Coolray"] = new() { new("1.5T", 147), new("1.5T", 150), new("1.5T", 177) },
+        ["Atlas"] = new() { new("2.0", 139), new("2.4", 149), new("1.8T", 184) },
+        ["Atlas Pro"] = new() { new("1.5T", 150), new("1.5T", 177) },
+        ["Monjaro"] = new() { new("2.0T", 238) },
+        ["Emgrand"] = new() { new("1.5", 122) },
+
+        // Haval
+        ["Jolion"] = new() { new("1.5T", 143), new("1.5T", 150) },
+        ["F7"] = new() { new("1.5T", 150), new("2.0T", 190) },
+        ["F7x"] = new() { new("1.5T", 150), new("2.0T", 190) },
+        ["Dargo"] = new() { new("2.0T", 192) },
+        ["H9"] = new() { new("2.0T", 218), new("2.0d", 190) },
+
+        // Chery
+        ["Tiggo 4 Pro"] = new() { new("1.5", 113), new("1.5T", 147) },
+        ["Tiggo 7 Pro"] = new() { new("1.5T", 147) },
+        ["Tiggo 7 Pro Max"] = new() { new("1.5T", 147), new("1.6T", 150) },
+        ["Tiggo 8 Pro Max"] = new() { new("2.0T", 197) },
+        ["Arrizo 8"] = new() { new("1.6T", 186) },
+
+        // Changan
+        ["CS35 Plus"] = new() { new("1.6", 117), new("1.4T", 150) },
+        ["CS55 Plus"] = new() { new("1.5T", 181) },
+        ["UNI-V"] = new() { new("1.5T", 181) },
+        ["UNI-K"] = new() { new("2.0T", 226) },
+
+        // Omoda
+        ["C5"] = new() { new("1.5T", 147), new("1.6T", 150) },
+        ["S5"] = new() { new("1.5", 113), new("1.5T", 147) },
+
+        // Ford
+        ["Focus"] = new() { new("1.4", 80), new("1.6", 100), new("1.6", 105), new("1.6", 115), new("1.6", 125), new("1.8", 125), new("2.0", 145), new("2.0", 150), new("1.5 EcoBoost", 150), new("2.5 ST", 225) },
+        ["Mondeo"] = new() { new("2.0", 145), new("2.5", 149), new("2.0 EcoBoost", 200), new("2.0 EcoBoost", 240) },
+        ["Kuga"] = new() { new("2.5", 150), new("1.5 EcoBoost", 150), new("1.6 EcoBoost", 150) },
+
+        // Mazda
+        ["3"] = new() { new("1.5", 120), new("1.6", 105), new("2.0", 150) },
+        ["6"] = new() { new("2.0", 150), new("2.5", 194), new("2.5T", 231) },
+        ["CX-5"] = new() { new("2.0", 150), new("2.5", 194) },
+
+        // Mitsubishi
+        ["Outlander"] = new() { new("2.0", 146), new("2.4", 167), new("3.0", 227) },
+        ["ASX"] = new() { new("1.6", 117), new("1.8", 140), new("2.0", 150) },
+        ["Lancer"] = new() { new("1.5", 109), new("1.6", 117), new("1.8", 143), new("2.0", 150) },
+        ["Pajero Sport"] = new() { new("2.4d", 181), new("3.0", 209) },
+
+        // Chevrolet
+        ["Cruze"] = new() { new("1.6", 109), new("1.8", 141), new("1.4T", 140) },
+        ["Lacetti"] = new() { new("1.4", 95), new("1.6", 109), new("1.8", 122) },
+        ["Aveo"] = new() { new("1.2", 84), new("1.4", 101), new("1.6", 115) },
+        ["Tahoe"] = new() { new("5.3", 324), new("5.3", 355), new("6.2", 409), new("6.2", 426) },
+    };
+
+    private static readonly List<EngineInfo> DefaultEngines = new()
+    {
+        new("1.4", 100),
+        new("1.5", 115),
+        new("1.6", 123),
+        new("1.8", 140),
+        new("2.0", 150),
+        new("2.4", 180),
+        new("2.5", 190),
+        new("3.0", 249),
+        new("3.5", 280),
+    };
+
+    // Получить список моторов для выбранной марки и модели
+    public static IReadOnlyList<EngineInfo> GetEnginesForModel(string? brand, string? model)
+    {
+        if (string.IsNullOrWhiteSpace(model)) return DefaultEngines;
+
+        var cleanModel = model.Trim();
+        var normModel = Normalize(cleanModel);
+
+        var match = ModelEngines.FirstOrDefault(kvp =>
+            kvp.Key.Equals(cleanModel, StringComparison.OrdinalIgnoreCase) ||
+            Normalize(kvp.Key).Equals(normModel, StringComparison.OrdinalIgnoreCase) ||
+            cleanModel.IndexOf(kvp.Key, StringComparison.OrdinalIgnoreCase) >= 0 ||
+            kvp.Key.IndexOf(cleanModel, StringComparison.OrdinalIgnoreCase) >= 0 ||
+            (ModelRussianAliases.TryGetValue(kvp.Key, out var aliases) && aliases.Any(a => cleanModel.IndexOf(a, StringComparison.OrdinalIgnoreCase) >= 0 || a.IndexOf(cleanModel, StringComparison.OrdinalIgnoreCase) >= 0)));
+
+        if (!match.Equals(default(KeyValuePair<string, List<EngineInfo>>)) && match.Value != null && match.Value.Count > 0)
+        {
+            return match.Value;
+        }
+
+        return DefaultEngines;
     }
 }

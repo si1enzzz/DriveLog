@@ -15,11 +15,22 @@ public partial class MainViewModel : ViewModelBase
     private readonly DatabaseService _db = DatabaseService.Instance;
 
     // Список марок для автоподстановки
-    public IReadOnlyList<string> BrandSuggestions => CarCatalogService.PopularBrands;
+    public ObservableCollection<string> BrandSuggestions { get; } = new(CarCatalogService.PopularBrands);
 
-    // Динамические списки моделей и поколений (обновляются при вводе марки)
+    // Динамические списки моделей, поколений и двигателей (обновляются при вводе марки и модели)
     public ObservableCollection<string> ModelSuggestions { get; } = new();
     public ObservableCollection<string> GenerationSuggestions { get; } = new();
+        public ObservableCollection<string> EngineSuggestions { get; } = new();
+    public ObservableCollection<string> HorsepowerSuggestions { get; } = new()
+    {
+        "75", "80", "85", "90", "98", "100", "105", "106", "110", "115", "120", "122", "123", "125",
+        "130", "140", "145", "149", "150", "160", "170", "180", "190", "200", "220", "240", "249", "250", "300"
+    };
+    public ObservableCollection<string> ColorSuggestions { get; } = new()
+    {
+        "Белый", "Черный", "Серый", "Серебристый", "Синий", "Красный", "Зеленый", 
+        "Коричневый", "Бежевый", "Голубой", "Оранжевый", "Желтый", "Бордовый", "Фиолетовый", "Золотистый"
+    };
 
     // Список всех автомобилей
     public ObservableCollection<Vehicle> Vehicles { get; } = new();
@@ -234,6 +245,9 @@ public partial class MainViewModel : ViewModelBase
     public partial string NewEngineVolume { get; set; } = string.Empty;
 
     [ObservableProperty]
+    public partial string NewHorsepower { get; set; } = string.Empty;
+
+    [ObservableProperty]
     public partial string NewColor { get; set; } = string.Empty;
 
     [ObservableProperty]
@@ -241,6 +255,15 @@ public partial class MainViewModel : ViewModelBase
 
     [ObservableProperty]
     public partial string VehicleErrorMessage { get; set; } = string.Empty;
+
+    // Режим редактирования автомобиля (null = создание нового)
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(VehicleFormTitle))]
+    [NotifyPropertyChangedFor(nameof(VehicleFormSubmitButtonText))]
+    public partial int? EditingVehicleId { get; set; } = null;
+
+    public string VehicleFormTitle => EditingVehicleId != null ? Strings.EditVehicle : Strings.NewVehicle;
+    public string VehicleFormSubmitButtonText => EditingVehicleId != null ? Strings.Save : Strings.Add;
 
     // --- ДИАЛОГ ПОДТВЕРЖДЕНИЯ УДАЛЕНИЯ АВТОМОБИЛЯ ---
     [ObservableProperty]
@@ -285,22 +308,45 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     public partial string RecordErrorMessage { get; set; } = string.Empty;
 
+    // Режим редактирования записи о замене (null = создание новой)
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(RecordFormTitle))]
+    [NotifyPropertyChangedFor(nameof(RecordFormSubmitButtonText))]
+    public partial int? EditingRecordId { get; set; } = null;
+
+    public string RecordFormTitle => EditingRecordId != null ? Strings.EditRecord : Strings.NewRecord;
+    public string RecordFormSubmitButtonText => EditingRecordId != null ? Strings.Save : Strings.SaveRecord;
+
     public MainViewModel()
     {
         // Загрузка сохранённых автомобилей из локальной базы данных SQLite
-        var savedVehicles = _db.GetAllVehicles();
-        foreach (var v in savedVehicles)
+        try
         {
-            Vehicles.Add(v);
+            var savedVehicles = _db.GetAllVehicles();
+            foreach (var v in savedVehicles)
+            {
+                Vehicles.Add(v);
+            }
+            SelectedVehicle = Vehicles.FirstOrDefault();
         }
-        SelectedVehicle = Vehicles.FirstOrDefault();
+        catch { }
+
+
     }
 
-    // Реакция на изменение марки: обновляем доступные модели
+    // Реакция на изменение марки: обновляем подсказки марок (с поддержкой русского ввода) и доступные модели
     partial void OnNewBrandChanged(string value)
     {
+        var filteredBrands = CarCatalogService.FilterBrands(value);
+        BrandSuggestions.Clear();
+        foreach (var b in filteredBrands)
+        {
+            BrandSuggestions.Add(b);
+        }
+
         ModelSuggestions.Clear();
         GenerationSuggestions.Clear();
+        EngineSuggestions.Clear();
 
         var models = CarCatalogService.GetModelsForBrand(value);
         foreach (var m in models)
@@ -309,15 +355,44 @@ public partial class MainViewModel : ViewModelBase
         }
     }
 
-    // Реакция на изменение модели: обновляем поколения
+    // Реакция на изменение модели: обновляем поколения и список возможных моторов
     partial void OnNewModelChanged(string value)
     {
         GenerationSuggestions.Clear();
+        EngineSuggestions.Clear();
 
         var gens = CarCatalogService.GetGenerationsForModel(NewBrand, value);
         foreach (var g in gens)
         {
             GenerationSuggestions.Add(g);
+        }
+
+        var engines = CarCatalogService.GetEnginesForModel(NewBrand, value);
+        foreach (var e in engines)
+        {
+            EngineSuggestions.Add(e.DisplayText);
+        }
+    }
+
+    // Реакция на выбор/ввод двигателя: если выбран вариант с л.с. вида "1.6 (123 л.с.)", авто-заполняем мощность
+    partial void OnNewEngineVolumeChanged(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return;
+
+        var match = System.Text.RegularExpressions.Regex.Match(value, @"\(([0-9]+)\s*л\.с\.\)");
+        if (match.Success && int.TryParse(match.Groups[1].Value, out int hp))
+        {
+            NewHorsepower = match.Groups[1].Value;
+
+            var volMatch = System.Text.RegularExpressions.Regex.Match(value, @"^([^\(]+)");
+            if (volMatch.Success)
+            {
+                var cleanVol = volMatch.Groups[1].Value.Trim().TrimEnd('л').Trim();
+                if (!string.IsNullOrWhiteSpace(cleanVol))
+                {
+                    NewEngineVolume = cleanVol;
+                }
+            }
         }
     }
 
@@ -360,6 +435,7 @@ public partial class MainViewModel : ViewModelBase
     private void ToggleAddVehicle()
     {
         IsAddingVehicle = !IsAddingVehicle;
+        EditingVehicleId = null;
         if (IsAddingVehicle)
         {
             // Взаимное закрытие: если открываем добавление авто, закрываем форму записи и окно удаления
@@ -373,10 +449,52 @@ public partial class MainViewModel : ViewModelBase
         NewGeneration = string.Empty;
         NewYear = DateTime.Today.Year;
         NewEngineVolume = string.Empty;
+        NewHorsepower = string.Empty;
         NewColor = string.Empty;
         NewVehicleMileage = 0;
+        BrandSuggestions.Clear();
+        foreach (var b in CarCatalogService.PopularBrands) BrandSuggestions.Add(b);
         ModelSuggestions.Clear();
         GenerationSuggestions.Clear();
+        EngineSuggestions.Clear();
+        OnPropertyChanged(nameof(VehicleFormTitle));
+        OnPropertyChanged(nameof(VehicleFormSubmitButtonText));
+    }
+
+    [RelayCommand]
+    private void EditCurrentVehicle()
+    {
+        if (SelectedVehicle == null) return;
+
+        EditingVehicleId = SelectedVehicle.Id;
+        NewBrand = SelectedVehicle.Brand;
+        NewModel = SelectedVehicle.Model;
+        NewGeneration = SelectedVehicle.Generation;
+        NewYear = SelectedVehicle.Year;
+        NewEngineVolume = SelectedVehicle.EngineVolume;
+        NewHorsepower = SelectedVehicle.Horsepower > 0 ? SelectedVehicle.Horsepower.ToString() : string.Empty;
+        NewColor = SelectedVehicle.Color;
+        NewVehicleMileage = SelectedVehicle.CurrentMileage;
+        VehicleErrorMessage = string.Empty;
+
+        // Заполняем подсказки для текущего авто
+        BrandSuggestions.Clear();
+        foreach (var b in CarCatalogService.PopularBrands) BrandSuggestions.Add(b);
+
+        ModelSuggestions.Clear();
+        foreach (var m in CarCatalogService.GetModelsForBrand(NewBrand)) ModelSuggestions.Add(m);
+
+        GenerationSuggestions.Clear();
+        foreach (var g in CarCatalogService.GetGenerationsForModel(NewBrand, NewModel)) GenerationSuggestions.Add(g);
+
+        EngineSuggestions.Clear();
+        foreach (var e in CarCatalogService.GetEnginesForModel(NewBrand, NewModel)) EngineSuggestions.Add(e.DisplayText);
+
+        IsAddingVehicle = true;
+        IsAddingRecord = false;
+        IsConfirmingDeleteVehicle = false;
+        OnPropertyChanged(nameof(VehicleFormTitle));
+        OnPropertyChanged(nameof(VehicleFormSubmitButtonText));
     }
 
     [RelayCommand]
@@ -394,23 +512,52 @@ public partial class MainViewModel : ViewModelBase
             return;
         }
 
-        var vehicle = new Vehicle
+        var canonicalBrand = CarCatalogService.ResolveCanonicalBrand(NewBrand);
+        var brandToSave = string.IsNullOrWhiteSpace(canonicalBrand) ? NewBrand.Trim() : canonicalBrand;
+
+        if (EditingVehicleId != null)
         {
-            Brand = NewBrand.Trim(),
-            Model = NewModel.Trim(),
-            Generation = NewGeneration.Trim(),
-            Year = (int)(NewYear ?? DateTime.Today.Year),
-            EngineVolume = NewEngineVolume.Trim(),
-            Color = NewColor.Trim(),
-            CurrentMileage = (int)(NewVehicleMileage ?? 0)
-        };
+            // Режим редактирования существующей машины
+            var v = Vehicles.FirstOrDefault(x => x.Id == EditingVehicleId.Value);
+            if (v != null)
+            {
+                v.Brand = brandToSave;
+                v.Model = NewModel.Trim();
+                v.Generation = NewGeneration?.Trim() ?? string.Empty;
+                v.Year = (int)(NewYear ?? DateTime.Today.Year);
+                v.EngineVolume = NewEngineVolume?.Trim() ?? string.Empty;
+                int.TryParse(NewHorsepower?.Trim(), out int parsedHp); v.Horsepower = parsedHp;
+                v.Color = NewColor?.Trim() ?? string.Empty;
+                v.CurrentMileage = (int)(NewVehicleMileage ?? 0);
 
-        // Сохранение в базу данных SQLite (присваивает уникальный Id)
-        _db.SaveVehicle(vehicle);
+                _db.SaveVehicle(v);
 
-        Vehicles.Add(vehicle);
-        SelectedVehicle = vehicle;
+                OnPropertyChanged(nameof(SelectedVehicle));
+            }
+        }
+        else
+        {
+            // Режим создания новой машины
+            var vehicle = new Vehicle
+            {
+                Brand = brandToSave,
+                Model = NewModel.Trim(),
+                Generation = NewGeneration?.Trim() ?? string.Empty,
+                Year = (int)(NewYear ?? DateTime.Today.Year),
+                EngineVolume = NewEngineVolume?.Trim() ?? string.Empty,
+                Horsepower = int.TryParse(NewHorsepower?.Trim(), out int pAddHp) ? pAddHp : 0,
+                Color = NewColor?.Trim() ?? string.Empty,
+                CurrentMileage = (int)(NewVehicleMileage ?? 0)
+            };
 
+            // Сохранение в базу данных SQLite (присваивает уникальный Id)
+            _db.SaveVehicle(vehicle);
+
+            Vehicles.Add(vehicle);
+            SelectedVehicle = vehicle;
+        }
+
+        EditingVehicleId = null;
         VehicleErrorMessage = string.Empty;
         IsAddingVehicle = false;
         OnPropertyChanged(nameof(CanDeleteVehicle));
@@ -468,11 +615,18 @@ public partial class MainViewModel : ViewModelBase
     private void ToggleAddForm()
     {
         IsAddingRecord = !IsAddingRecord;
+        EditingRecordId = null;
         if (IsAddingRecord)
         {
             // Взаимное закрытие: если открываем добавление записи, закрываем добавление авто и окно удаления
             IsAddingVehicle = false;
             IsConfirmingDeleteVehicle = false;
+            NewPartTitle = string.Empty;
+            NewCategory = "ТО";
+            NewPartCost = 0m;
+            NewLaborCost = 0m;
+            NewNotes = string.Empty;
+            NewServiceName = "Сам в гараже";
         }
 
         RecordErrorMessage = string.Empty;
@@ -482,6 +636,46 @@ public partial class MainViewModel : ViewModelBase
             NewMileage = SelectedVehicle.CurrentMileage;
             NewDate = DateTimeOffset.Now;
         }
+
+        OnPropertyChanged(nameof(RecordFormTitle));
+        OnPropertyChanged(nameof(RecordFormSubmitButtonText));
+    }
+
+    [RelayCommand]
+    private void EditRecord(ServiceRecord? record)
+    {
+        if (record == null) return;
+
+        EditingRecordId = record.Id;
+        NewPartTitle = record.PartTitle;
+        NewCategory = record.Category;
+        NewDate = new DateTimeOffset(record.Date);
+        NewMileage = record.Mileage;
+        NewPartCost = record.PartCost;
+        NewLaborCost = record.LaborCost;
+        NewServiceName = record.ServiceName;
+        NewNotes = record.Notes;
+        RecordErrorMessage = string.Empty;
+
+        IsAddingRecord = true;
+        IsAddingVehicle = false;
+        IsConfirmingDeleteVehicle = false;
+
+        OnPropertyChanged(nameof(RecordFormTitle));
+        OnPropertyChanged(nameof(RecordFormSubmitButtonText));
+    }
+
+    [RelayCommand]
+    private void DeleteRecord(ServiceRecord? record)
+    {
+        if (record == null || SelectedVehicle == null) return;
+
+        _db.DeleteRecord(record.Id);
+        SelectedVehicle.Records.Remove(record);
+        SelectedVehicle.NotifyTotalSpentChanged();
+
+        OnPropertyChanged(nameof(TotalGarageSpent));
+        OnPropertyChanged(nameof(TotalRecordsCount));
     }
 
     [RelayCommand]
@@ -490,6 +684,8 @@ public partial class MainViewModel : ViewModelBase
         IsAddingVehicle = false;
         IsAddingRecord = false;
         IsConfirmingDeleteVehicle = false;
+        EditingVehicleId = null;
+        EditingRecordId = null;
         VehicleErrorMessage = string.Empty;
         RecordErrorMessage = string.Empty;
     }
@@ -513,30 +709,61 @@ public partial class MainViewModel : ViewModelBase
         decimal partCost = NewPartCost ?? 0m;
         decimal laborCost = NewLaborCost ?? 0m;
 
-        var record = new ServiceRecord
+        if (EditingRecordId != null)
         {
-            VehicleId = SelectedVehicle.Id,
-            PartTitle = NewPartTitle.Trim(),
-            Category = string.IsNullOrWhiteSpace(NewCategory) ? "ТО" : NewCategory.Trim(),
-            Mileage = mileageAtSwap,
-            PartCost = partCost,
-            LaborCost = laborCost,
-            ServiceName = string.IsNullOrWhiteSpace(NewServiceName) ? "Сам в гараже" : NewServiceName.Trim(),
-            Notes = NewNotes.Trim(),
-            Date = (NewDate ?? DateTimeOffset.Now).DateTime
-        };
+            // Режим редактирования существующей записи
+            var existing = SelectedVehicle.Records.FirstOrDefault(r => r.Id == EditingRecordId.Value);
+            if (existing != null)
+            {
+                existing.PartTitle = NewPartTitle.Trim();
+                existing.Category = string.IsNullOrWhiteSpace(NewCategory) ? "ТО" : NewCategory.Trim();
+                existing.Mileage = mileageAtSwap;
+                existing.PartCost = partCost;
+                existing.LaborCost = laborCost;
+                existing.ServiceName = string.IsNullOrWhiteSpace(NewServiceName) ? "Сам в гараже" : NewServiceName.Trim();
+                existing.Notes = NewNotes?.Trim() ?? string.Empty;
+                existing.Date = (NewDate ?? DateTimeOffset.Now).DateTime;
 
-        // Сохраняем запись в базу данных SQLite
-        _db.SaveRecord(record);
+                _db.SaveRecord(existing);
 
-        SelectedVehicle.Records.Insert(0, record);
+                if (mileageAtSwap > SelectedVehicle.CurrentMileage)
+                {
+                    SelectedVehicle.CurrentMileage = mileageAtSwap;
+                    _db.SaveVehicle(SelectedVehicle);
+                }
 
-        if (mileageAtSwap > SelectedVehicle.CurrentMileage)
+                SelectedVehicle.NotifyTotalSpentChanged();
+            }
+        }
+        else
         {
-            SelectedVehicle.CurrentMileage = mileageAtSwap;
-            _db.SaveVehicle(SelectedVehicle); // сохраняем обновленный пробег машины
+            // Режим создания новой записи
+            var record = new ServiceRecord
+            {
+                VehicleId = SelectedVehicle.Id,
+                PartTitle = NewPartTitle.Trim(),
+                Category = string.IsNullOrWhiteSpace(NewCategory) ? "ТО" : NewCategory.Trim(),
+                Mileage = mileageAtSwap,
+                PartCost = partCost,
+                LaborCost = laborCost,
+                ServiceName = string.IsNullOrWhiteSpace(NewServiceName) ? "Сам в гараже" : NewServiceName.Trim(),
+                Notes = NewNotes?.Trim() ?? string.Empty,
+                Date = (NewDate ?? DateTimeOffset.Now).DateTime
+            };
+
+            // Сохраняем запись в базу данных SQLite
+            _db.SaveRecord(record);
+
+            SelectedVehicle.Records.Insert(0, record);
+
+            if (mileageAtSwap > SelectedVehicle.CurrentMileage)
+            {
+                SelectedVehicle.CurrentMileage = mileageAtSwap;
+                _db.SaveVehicle(SelectedVehicle); // сохраняем обновленный пробег машины
+            }
         }
 
+        EditingRecordId = null;
         NewPartTitle = string.Empty;
         NewPartCost = 0m;
         NewLaborCost = 0m;
