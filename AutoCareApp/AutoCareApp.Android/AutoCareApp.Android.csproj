@@ -6,9 +6,9 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationId>com.timur.autocareapp</ApplicationId>
-    <ApplicationVersion>2</ApplicationVersion>
-    <ApplicationDisplayVersion>0.3</ApplicationDisplayVersion>
-    <ApplicationTitle>AutoCareApp</ApplicationTitle>
+    <ApplicationVersion>3</ApplicationVersion>
+    <ApplicationDisplayVersion>0.34</ApplicationDisplayVersion>
+    <ApplicationTitle>DriveLog</ApplicationTitle>
     <AndroidPackageFormat>apk</AndroidPackageFormat>
     <RunAOTCompilation>false</RunAOTCompilation>
     <TrimMode>none</TrimMode>

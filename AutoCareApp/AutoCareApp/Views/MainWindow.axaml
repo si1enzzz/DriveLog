@@ -8,7 +8,7 @@
         Width="480" Height="900"
         x:Class="AutoCareApp.Views.MainWindow"
         x:DataType="vm:MainViewModel"
-        Title="AutoCare"
+        Title="DriveLog"
         Background="{Binding BgColor}">
     <views:MainView />
 </Window>

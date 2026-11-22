@@ -6,7 +6,7 @@ using Avalonia.Android;
 namespace AutoCareApp.Android;
 
 [Activity(
-    Label = "AutoCareApp",
+    Label = "DriveLog",
     Theme = "@style/MyTheme.NoActionBar",
     Icon = "@mipmap/appicon",
     MainLauncher = true,

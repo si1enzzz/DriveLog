@@ -129,7 +129,7 @@ public static class ExportService
     {
         string directory = targetDirectory ?? Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-            "AutoCareReports"
+            "DriveLogReports"
         );
 
         Directory.CreateDirectory(directory);

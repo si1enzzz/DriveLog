@@ -44,9 +44,30 @@ public class DatabaseService
         }
 
 #if ANDROID
-        return Path.Combine(basePath, "autocare.db");
+        string oldPath = Path.Combine(basePath, "autocare.db");
+        string newPath = Path.Combine(basePath, "drivelog.db");
+        if (File.Exists(oldPath) && !File.Exists(newPath))
+        {
+            try { File.Copy(oldPath, newPath); } catch { return oldPath; }
+        }
+        return File.Exists(newPath) ? newPath : oldPath;
 #else
-        return Path.Combine(basePath, "AutoCareApp", "autocare.db");
+        string dir = Path.Combine(basePath, "DriveLog");
+        string newDb = Path.Combine(dir, "drivelog.db");
+        if (!Directory.Exists(dir))
+        {
+            try 
+            { 
+                Directory.CreateDirectory(dir); 
+                string oldFile = Path.Combine(basePath, "AutoCareApp", "autocare.db");
+                if (File.Exists(oldFile) && !File.Exists(newDb))
+                {
+                    File.Copy(oldFile, newDb);
+                }
+            } 
+            catch { }
+        }
+        return Path.Combine(dir, "drivelog.db");
 #endif
     }
 
