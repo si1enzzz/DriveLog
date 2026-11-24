@@ -52,7 +52,6 @@ flowchart LR
 * **CommunityToolkit.Mvvm:** использование современных Source Generators (`[ObservableProperty]`, `[RelayCommand]`, `[NotifyPropertyChangedFor]`).
 * **Defensive Programming:** сервис каталога защищён интерфейсом `IReadOnlyList<T>`, исключающим непреднамеренную модификацию базы извне.
 
-> 📖 **Подробный разбор архитектурных компромиссов (ADR 001 – ADR 011) доступен в файле [engineering_decisions.md](engineering_decisions.md).**
 
 ---
 
