@@ -1,5 +1,5 @@
 {
-  "name": "AutoCare Tracker (.NET 10 & Avalonia)",
+  "name": "DriveLog (.NET 10 & Avalonia)",
   "image": "mcr.microsoft.com/devcontainers/dotnet:latest",
   "customizations": {
     "vscode": {
@@ -9,11 +9,11 @@
         "AvaloniaTeam.vscode-avalonia"
       ],
       "settings": {
-        "dotnet.defaultSolution": "AutoCareApp/AutoCareApp.slnx",
+        "dotnet.defaultSolution": "DriveLog/DriveLog.slnx",
         "omnisharp.enableRoslynAnalyzers": true,
         "editor.formatOnSave": true
       }
     }
   },
-  "postCreateCommand": "dotnet --version && cd AutoCareApp/AutoCareApp && dotnet restore"
+  "postCreateCommand": "dotnet --version && dotnet restore DriveLog/DriveLog.slnx"
 }

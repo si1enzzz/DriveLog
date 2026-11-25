@@ -243,8 +243,14 @@
                             <Grid ColumnDefinitions="*, Auto" Margin="0, 6, 0, 0">
                                 <StackPanel>
                                     <TextBlock Text="{Binding Strings.CurrentMileage}" Foreground="{Binding TextSecondaryColor}" FontSize="12" />
-                                    <TextBlock Text="{Binding SelectedVehicle.CurrentMileage, StringFormat='{}{0:N0} км'}" 
-                                               FontSize="22" FontWeight="Black" Foreground="#074CBA" />
+                                    <TextBlock FontSize="22" FontWeight="Black" Foreground="#074CBA">
+                                        <TextBlock.Text>
+                                            <MultiBinding StringFormat="{}{0:N0} {1}">
+                                                <Binding Path="SelectedVehicle.CurrentMileage" />
+                                                <Binding Path="Strings.KmSuffix" />
+                                            </MultiBinding>
+                                        </TextBlock.Text>
+                                    </TextBlock>
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="1" HorizontalAlignment="Right">
@@ -329,7 +335,14 @@
 
                                         <!-- Информация: Пробег, Умная дата, Сервис -->
                                         <WrapPanel Orientation="Horizontal">
-                                            <TextBlock Text="{Binding Mileage, StringFormat='{}{0:N0} км'}" Foreground="{Binding #RootView.((vm:MainViewModel)DataContext).TextSecondaryColor}" FontSize="13" />
+                                            <TextBlock Foreground="{Binding #RootView.((vm:MainViewModel)DataContext).TextSecondaryColor}" FontSize="13">
+                                                <TextBlock.Text>
+                                                    <MultiBinding StringFormat="{}{0:N0} {1}">
+                                                        <Binding Path="Mileage" />
+                                                        <Binding Path="#RootView.((vm:MainViewModel)DataContext).Strings.KmSuffix" />
+                                                    </MultiBinding>
+                                                </TextBlock.Text>
+                                            </TextBlock>
                                             <TextBlock Text="  ·  " Foreground="{Binding #RootView.((vm:MainViewModel)DataContext).TextSecondaryColor}" FontSize="13" />
                                             <TextBlock Text="{Binding DisplayDate}" Foreground="{Binding #RootView.((vm:MainViewModel)DataContext).TextSecondaryColor}" FontSize="13" />
                                             <TextBlock Text="  ·  " Foreground="{Binding #RootView.((vm:MainViewModel)DataContext).TextSecondaryColor}" FontSize="13" />
@@ -339,9 +352,12 @@
                                         <!-- Цены: деталь + работа -->
                                         <TextBlock Foreground="{Binding #RootView.((vm:MainViewModel)DataContext).TextSecondaryColor}" FontSize="12">
                                             <TextBlock.Text>
-                                                <MultiBinding StringFormat="Деталь: {0:N0} ₽   Работа: {1:N0} ₽">
+                                                <MultiBinding StringFormat="{}{0}: {1:N0} {4}   {2}: {3:N0} {4}">
+                                                    <Binding Path="#RootView.((vm:MainViewModel)DataContext).Strings.PartCost" />
                                                     <Binding Path="PartCost" />
+                                                    <Binding Path="#RootView.((vm:MainViewModel)DataContext).Strings.LaborCost" />
                                                     <Binding Path="LaborCost" />
+                                                    <Binding Path="#RootView.((vm:MainViewModel)DataContext).Strings.CurrencySuffix" />
                                                 </MultiBinding>
                                             </TextBlock.Text>
                                         </TextBlock>
@@ -532,7 +548,7 @@
 
                             <!-- Экспорт в TXT -->
                             <Button Grid.Column="1" 
-                                    Content="Текст (TXT)"
+                                    Content="{Binding Strings.ExportTxt}"
                                     Command="{Binding ExportSelectedVehicleCommand}"
                                     CommandParameter="txt"
                                     Background="#074CBA" Foreground="White"
@@ -785,7 +801,7 @@
                                                  FilterMode="None"
                                                  MinimumPrefixLength="0"
                                                  MaxDropDownHeight="140"
-                                                 PlaceholderText="I, II Рестайлинг..." />
+                                                 PlaceholderText="{Binding Strings.GenerationPlaceholder}" />
                             </StackPanel>
                             <StackPanel Grid.Column="1" Spacing="4" Margin="5,0,0,0">
                                 <TextBlock Text="{Binding Strings.Year}" Foreground="{Binding TextSecondaryColor}" FontSize="12" />
@@ -802,7 +818,7 @@
                                                  FilterMode="None"
                                                  MinimumPrefixLength="0"
                                                  MaxDropDownHeight="140"
-                                                 PlaceholderText="1.6, 2.0, 1.5 (115 л.с.)..." />
+                                                 PlaceholderText="{Binding Strings.EnginePlaceholder}" />
                             </StackPanel>
                             <StackPanel Grid.Column="1" Spacing="4" Margin="5,0,0,0">
                                 <TextBlock Text="{Binding Strings.Horsepower}" Foreground="{Binding TextSecondaryColor}" FontSize="12" />
@@ -824,7 +840,7 @@
                                                  FilterMode="Contains"
                                                  MinimumPrefixLength="0"
                                                  MaxDropDownHeight="140"
-                                                 PlaceholderText="Белый, Черный, Серебристый..." />
+                                                 PlaceholderText="{Binding Strings.ColorPlaceholder}" />
                             </StackPanel>
                             <StackPanel Grid.Column="1" Spacing="4" Margin="5,0,0,0">
                                 <TextBlock Text="{Binding Strings.MileageKm}" Foreground="{Binding TextSecondaryColor}" FontSize="12" />
@@ -886,12 +902,12 @@
                                                                      FilterMode="Contains"
                                                                      MinimumPrefixLength="0"
                                                                      MaxDropDownHeight="150"
-                                                                     PlaceholderText="Что меняли (например: Масло ДВС)" />
+                                                                     PlaceholderText="{Binding #RootView.((vm:MainViewModel)DataContext).Strings.PartTitlePlaceholder}" />
                                                     <NumericUpDown Value="{Binding Cost}"
                                                                    Minimum="0"
                                                                    FormatString="N0"
                                                                    HorizontalAlignment="Stretch"
-                                                                   PlaceholderText="Цена детали (₽)" />
+                                                                   PlaceholderText="{Binding #RootView.((vm:MainViewModel)DataContext).Strings.PartPricePlaceholder}" />
                                                 </StackPanel>
                                             </Border>
 
@@ -961,7 +977,7 @@
                             </StackPanel>
                             <StackPanel Grid.Column="1" Spacing="4" Margin="5, 0, 0, 0">
                                 <TextBlock Text="{Binding Strings.WhereReplaced}" Foreground="{Binding TextSecondaryColor}" FontSize="12" />
-                                <TextBox Text="{Binding NewServiceName}" PlaceholderText="Сам в гараже / СТО" />
+                                <TextBox Text="{Binding NewServiceName}" PlaceholderText="{Binding Strings.ServiceLocationPlaceholder}" />
                             </StackPanel>
                         </Grid>
 
@@ -975,7 +991,7 @@
                         <!-- Заметка -->
                         <StackPanel Spacing="4">
                             <TextBlock Text="{Binding Strings.Notes}" Foreground="{Binding TextSecondaryColor}" FontSize="12" />
-                            <TextBox Text="{Binding NewNotes}" PlaceholderText="Артикул детали, бренд, вязкость..." />
+                            <TextBox Text="{Binding NewNotes}" PlaceholderText="{Binding Strings.NotesPlaceholder}" />
                         </StackPanel>
 
                         <!-- Кнопки формы записи: Сохранить и Отмена -->
@@ -1144,7 +1160,7 @@
                         IsVisible="{Binding IsConfirmingDeletePartItem}">
                     <StackPanel Spacing="16">
                         <StackPanel Spacing="8">
-                            <TextBlock Text="Удалить деталь?"
+                            <TextBlock Text="{Binding Strings.DeletePartItemTitle}"
                                        FontSize="19"
                                        FontWeight="Bold"
                                        Foreground="{Binding TextPrimaryColor}" />

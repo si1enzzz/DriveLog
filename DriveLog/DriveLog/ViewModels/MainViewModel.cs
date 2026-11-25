@@ -197,6 +197,8 @@ public partial class MainViewModel : ViewModelBase
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(DeleteConfirmMessage))]
+    [NotifyPropertyChangedFor(nameof(DeleteRecordConfirmMessage))]
+    [NotifyPropertyChangedFor(nameof(DeletePartItemConfirmMessage))]
     public partial AppStrings Strings { get; set; } = AppStrings.Russian;
 
     public string RuLangBtnBg => IsRussian ? "#074CBA" : (IsDarkTheme ? "#1F1F24" : "#E2E2E6");
@@ -209,7 +211,7 @@ public partial class MainViewModel : ViewModelBase
     {
         CurrentLanguage = "ru";
         Strings = AppStrings.Russian;
-        OnPropertyChanged(nameof(DeleteConfirmMessage));
+        ApplyLocalizedSuggestions();
     }
 
     [RelayCommand]
@@ -217,7 +219,30 @@ public partial class MainViewModel : ViewModelBase
     {
         CurrentLanguage = "en";
         Strings = AppStrings.English;
+        ApplyLocalizedSuggestions();
+    }
+
+    private void ApplyLocalizedSuggestions()
+    {
+        PartTitleSuggestions.Clear();
+        foreach (var item in Strings.DefaultPartSuggestions) PartTitleSuggestions.Add(item);
+
+        ColorSuggestions.Clear();
+        foreach (var item in Strings.DefaultColorSuggestions) ColorSuggestions.Add(item);
+
+        if (DriverName == AppStrings.Russian.Driver || DriverName == AppStrings.English.Driver)
+        {
+            DriverName = Strings.Driver;
+        }
+
+        if (NewServiceName == AppStrings.Russian.DefaultServiceLocation || NewServiceName == AppStrings.English.DefaultServiceLocation)
+        {
+            NewServiceName = Strings.DefaultServiceLocation;
+        }
+
         OnPropertyChanged(nameof(DeleteConfirmMessage));
+        OnPropertyChanged(nameof(DeleteRecordConfirmMessage));
+        OnPropertyChanged(nameof(DeletePartItemConfirmMessage));
     }
 
     public string DeleteConfirmMessage => SelectedVehicle == null 
@@ -340,8 +365,8 @@ public partial class MainViewModel : ViewModelBase
     public partial PartItem? PartItemToDelete { get; set; } = null;
 
     public string DeletePartItemConfirmMessage => PartItemToDelete != null && !string.IsNullOrWhiteSpace(PartItemToDelete.Title)
-        ? $"Удалить деталь «{PartItemToDelete.Title}»?"
-        : "Удалить эту строку детали?";
+        ? string.Format(Strings.DeletePartItemConfirmFormat, PartItemToDelete.Title)
+        : Strings.DeletePartItemConfirmEmpty;
 
     [ObservableProperty]
     public partial DateTimeOffset? NewDate { get; set; } = DateTimeOffset.Now;
@@ -564,13 +589,13 @@ public partial class MainViewModel : ViewModelBase
     {
         if (string.IsNullOrWhiteSpace(NewBrand))
         {
-            VehicleErrorMessage = "Укажите марку автомобиля!";
+            VehicleErrorMessage = Strings.ErrorBrandRequired;
             return;
         }
 
         if (string.IsNullOrWhiteSpace(NewModel))
         {
-            VehicleErrorMessage = "Укажите модель автомобиля!";
+            VehicleErrorMessage = Strings.ErrorModelRequired;
             return;
         }
 
@@ -694,7 +719,7 @@ public partial class MainViewModel : ViewModelBase
             NewCategory = "ТО";
             NewLaborCost = null;
             NewNotes = string.Empty;
-            NewServiceName = "Сам в гараже";
+            NewServiceName = Strings.DefaultServiceLocation;
         }
 
         RecordErrorMessage = string.Empty;
@@ -857,7 +882,7 @@ public partial class MainViewModel : ViewModelBase
     {
         if (SelectedVehicle == null)
         {
-            RecordErrorMessage = "Сначала выберите автомобиль!";
+            RecordErrorMessage = Strings.ErrorSelectVehicle;
             return;
         }
 
@@ -868,7 +893,7 @@ public partial class MainViewModel : ViewModelBase
 
         if (validParts.Count == 0)
         {
-            RecordErrorMessage = "Введите хотя бы одну деталь!";
+            RecordErrorMessage = Strings.ErrorPartRequired;
             return;
         }
 
@@ -890,7 +915,7 @@ public partial class MainViewModel : ViewModelBase
                 existing.Mileage = mileageAtSwap;
                 existing.PartCost = partCost;
                 existing.LaborCost = laborCost;
-                existing.ServiceName = string.IsNullOrWhiteSpace(NewServiceName) ? "Сам в гараже" : NewServiceName.Trim();
+                existing.ServiceName = string.IsNullOrWhiteSpace(NewServiceName) ? Strings.DefaultServiceLocation : NewServiceName.Trim();
                 existing.Notes = NewNotes?.Trim() ?? string.Empty;
                 existing.Date = (NewDate ?? DateTimeOffset.Now).DateTime;
 
@@ -923,7 +948,7 @@ public partial class MainViewModel : ViewModelBase
                 Mileage = mileageAtSwap,
                 PartCost = partCost,
                 LaborCost = laborCost,
-                ServiceName = string.IsNullOrWhiteSpace(NewServiceName) ? "Сам в гараже" : NewServiceName.Trim(),
+                ServiceName = string.IsNullOrWhiteSpace(NewServiceName) ? Strings.DefaultServiceLocation : NewServiceName.Trim(),
                 Notes = NewNotes?.Trim() ?? string.Empty,
                 Date = (NewDate ?? DateTimeOffset.Now).DateTime
             };

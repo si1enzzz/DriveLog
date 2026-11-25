@@ -22,6 +22,9 @@ public class AppStrings
     public string DeleteConfirmFormat { get; init; } = "";
     public string DeleteRecordConfirmTitle { get; init; } = "";
     public string DeleteRecordConfirmFormat { get; init; } = "";
+    public string DeletePartItemTitle { get; init; } = "";
+    public string DeletePartItemConfirmFormat { get; init; } = "";
+    public string DeletePartItemConfirmEmpty { get; init; } = "";
     public string YesDelete { get; init; } = "";
     public string Cancel { get; init; } = "";
     public string NewVehicle { get; init; } = "";
@@ -65,6 +68,21 @@ public class AppStrings
     public string CloudSyncDesc { get; init; } = "";
     public string KmSuffix { get; init; } = "";
     public string CurrencySuffix { get; init; } = "";
+    public string ExportTxt { get; init; } = "";
+    public string GenerationPlaceholder { get; init; } = "";
+    public string EnginePlaceholder { get; init; } = "";
+    public string ColorPlaceholder { get; init; } = "";
+    public string PartTitlePlaceholder { get; init; } = "";
+    public string PartPricePlaceholder { get; init; } = "";
+    public string ServiceLocationPlaceholder { get; init; } = "";
+    public string DefaultServiceLocation { get; init; } = "";
+    public string NotesPlaceholder { get; init; } = "";
+    public string ErrorBrandRequired { get; init; } = "";
+    public string ErrorModelRequired { get; init; } = "";
+    public string ErrorSelectVehicle { get; init; } = "";
+    public string ErrorPartRequired { get; init; } = "";
+    public string[] DefaultPartSuggestions { get; init; } = [];
+    public string[] DefaultColorSuggestions { get; init; } = [];
 
     public static readonly AppStrings Russian = new()
     {
@@ -85,6 +103,9 @@ public class AppStrings
         DeleteConfirmFormat = "Вы уверены, что хотите удалить {0}? Все данные и история обслуживания ({1} записей) будут удалены безвозвратно.",
         DeleteRecordConfirmTitle = "Удалить запись?",
         DeleteRecordConfirmFormat = "Вы уверены, что хотите удалить запись «{0}»? Это действие нельзя отменить.",
+        DeletePartItemTitle = "Удалить деталь?",
+        DeletePartItemConfirmFormat = "Удалить деталь «{0}»?",
+        DeletePartItemConfirmEmpty = "Удалить эту строку детали?",
         YesDelete = "Да, удалить",
         Cancel = "Отмена",
         NewVehicle = "Новый автомобиль",
@@ -127,7 +148,36 @@ public class AppStrings
         CloudSyncTitle = "Облачная синхронизация",
         CloudSyncDesc = "Вход и регистрация по почте появятся на следующем этапе. Ваши данные надёжно сохранены в локальной базе данных SQLite на этом устройстве.",
         KmSuffix = "км",
-        CurrencySuffix = "₽"
+        CurrencySuffix = "₽",
+        ExportTxt = "Текст (TXT)",
+        GenerationPlaceholder = "I, II Рестайлинг...",
+        EnginePlaceholder = "1.6, 2.0, 1.5 (115 л.с.)...",
+        ColorPlaceholder = "Белый, Черный, Серебристый...",
+        PartTitlePlaceholder = "Что меняли (например: Масло ДВС)",
+        PartPricePlaceholder = "Цена детали (₽)",
+        ServiceLocationPlaceholder = "Сам в гараже / СТО",
+        DefaultServiceLocation = "Сам в гараже",
+        NotesPlaceholder = "Артикул детали, бренд, вязкость...",
+        ErrorBrandRequired = "Укажите марку автомобиля!",
+        ErrorModelRequired = "Укажите модель автомобиля!",
+        ErrorSelectVehicle = "Сначала выберите автомобиль!",
+        ErrorPartRequired = "Введите хотя бы одну деталь!",
+        DefaultPartSuggestions =
+        [
+            "Масло ДВС + масляный фильтр",
+            "Воздушный фильтр",
+            "Салонный фильтр",
+            "Передние тормозные колодки",
+            "Задние тормозные колодки",
+            "Свечи зажигания",
+            "Шиномонтаж",
+            "Развал-схождение"
+        ],
+        DefaultColorSuggestions =
+        [
+            "Белый", "Черный", "Серый", "Серебристый", "Синий", "Красный", "Зеленый",
+            "Коричневый", "Бежевый", "Голубой", "Оранжевый", "Желтый", "Бордовый", "Фиолетовый", "Золотистый"
+        ]
     };
 
     public static readonly AppStrings English = new()
@@ -149,6 +199,9 @@ public class AppStrings
         DeleteConfirmFormat = "Are you sure you want to delete {0}? All vehicle data and maintenance history ({1} records) will be deleted permanently.",
         DeleteRecordConfirmTitle = "Delete record?",
         DeleteRecordConfirmFormat = "Are you sure you want to delete \"{0}\"? This action cannot be undone.",
+        DeletePartItemTitle = "Delete part?",
+        DeletePartItemConfirmFormat = "Delete part \"{0}\"?",
+        DeletePartItemConfirmEmpty = "Delete this part row?",
         YesDelete = "Yes, delete",
         Cancel = "Cancel",
         NewVehicle = "New vehicle",
@@ -191,6 +244,35 @@ public class AppStrings
         CloudSyncTitle = "Cloud synchronization",
         CloudSyncDesc = "Email login and registration will arrive in the next update. Your data is safely stored in local SQLite database on this device.",
         KmSuffix = "km",
-        CurrencySuffix = "₽"
+        CurrencySuffix = "₽",
+        ExportTxt = "Text (TXT)",
+        GenerationPlaceholder = "I, II Facelift...",
+        EnginePlaceholder = "1.6, 2.0, 1.5 (115 hp)...",
+        ColorPlaceholder = "White, Black, Silver...",
+        PartTitlePlaceholder = "Replaced part (e.g., Engine oil)",
+        PartPricePlaceholder = "Part price (₽)",
+        ServiceLocationPlaceholder = "DIY garage / Service shop",
+        DefaultServiceLocation = "DIY garage",
+        NotesPlaceholder = "Part number, brand, viscosity...",
+        ErrorBrandRequired = "Please enter the car brand!",
+        ErrorModelRequired = "Please enter the car model!",
+        ErrorSelectVehicle = "Please select a vehicle first!",
+        ErrorPartRequired = "Please enter at least one part!",
+        DefaultPartSuggestions =
+        [
+            "Engine oil + oil filter",
+            "Air filter",
+            "Cabin filter",
+            "Front brake pads",
+            "Rear brake pads",
+            "Spark plugs",
+            "Tire service",
+            "Wheel alignment"
+        ],
+        DefaultColorSuggestions =
+        [
+            "White", "Black", "Gray", "Silver", "Blue", "Red", "Green",
+            "Brown", "Beige", "Light blue", "Orange", "Yellow", "Burgundy", "Purple", "Gold"
+        ]
     };
 }

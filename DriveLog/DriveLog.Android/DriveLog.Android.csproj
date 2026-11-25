@@ -6,8 +6,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationId>com.timur.drivelog</ApplicationId>
-    <ApplicationVersion>6</ApplicationVersion>
-    <ApplicationDisplayVersion>0.37</ApplicationDisplayVersion>
+    <ApplicationVersion>7</ApplicationVersion>
+    <ApplicationDisplayVersion>0.38</ApplicationDisplayVersion>
     <ApplicationTitle>DriveLog</ApplicationTitle>
     <AndroidPackageFormat>apk</AndroidPackageFormat>
     <RunAOTCompilation>false</RunAOTCompilation>
