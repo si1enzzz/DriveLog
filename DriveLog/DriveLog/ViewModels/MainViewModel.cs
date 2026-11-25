@@ -14,8 +14,8 @@ public partial class MainViewModel : ViewModelBase
     // Сервис базы данных SQLite
     private readonly DatabaseService _db = DatabaseService.Instance;
 
-    // Список марок для автоподстановки
-    public ObservableCollection<string> BrandSuggestions { get; } = new(CarCatalogService.PopularBrands);
+    // Список марок для автоподстановки (загружается лениво при открытии формы авто, чтобы ускорить старт)
+    public ObservableCollection<string> BrandSuggestions { get; } = new();
 
     // Динамические списки моделей, поколений и двигателей (обновляются при вводе марки и модели)
     public ObservableCollection<string> ModelSuggestions { get; } = new();

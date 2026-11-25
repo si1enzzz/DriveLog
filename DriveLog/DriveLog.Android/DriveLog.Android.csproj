@@ -6,15 +6,16 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationId>com.timur.drivelog</ApplicationId>
-    <ApplicationVersion>7</ApplicationVersion>
-    <ApplicationDisplayVersion>0.38</ApplicationDisplayVersion>
+    <ApplicationVersion>8</ApplicationVersion>
+    <ApplicationDisplayVersion>0.39</ApplicationDisplayVersion>
     <ApplicationTitle>DriveLog</ApplicationTitle>
     <AndroidPackageFormat>apk</AndroidPackageFormat>
-    <RunAOTCompilation>false</RunAOTCompilation>
-    <TrimMode>none</TrimMode>
-    <PublishTrimmed>false</PublishTrimmed>
+    <RunAOTCompilation>true</RunAOTCompilation>
+    <AndroidEnableProfiledAot>true</AndroidEnableProfiledAot>
+    <TrimMode>partial</TrimMode>
+    <PublishTrimmed>true</PublishTrimmed>
     <AndroidSdkDirectory>D:\androidSDK</AndroidSdkDirectory>
-    <RuntimeIdentifiers>android-arm;android-arm64;android-x86;android-x64</RuntimeIdentifiers>
+    <RuntimeIdentifiers>android-arm64</RuntimeIdentifiers>
     <RootNamespace>DriveLog.Android</RootNamespace>
     <AssemblyName>DriveLog.Android</AssemblyName>
   </PropertyGroup>
@@ -26,6 +27,10 @@
     <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.1" />
     <PackageReference Include="sqlite-net-pcl" Version="1.11.285" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <TrimmerRootAssembly Include="DriveLog" RootMode="All" />
   </ItemGroup>
 
   <ItemGroup>
