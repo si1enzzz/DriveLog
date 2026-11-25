@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace AutoCareApp.Services;
+namespace DriveLog.Services;
 
 public static class CarCatalogService
 {

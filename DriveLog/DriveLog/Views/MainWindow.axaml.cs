@@ -1,6 +1,6 @@
 ﻿using Avalonia.Controls;
 
-namespace AutoCareApp.Views;
+namespace DriveLog.Views;
 
 public partial class MainWindow : Window
 {

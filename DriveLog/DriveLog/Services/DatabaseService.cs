@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using AutoCareApp.Models;
+using DriveLog.Models;
 using SQLite;
 
-namespace AutoCareApp.Services;
+namespace DriveLog.Services;
 
 public class DatabaseService
 {
@@ -44,28 +44,12 @@ public class DatabaseService
         }
 
 #if ANDROID
-        string oldPath = Path.Combine(basePath, "autocare.db");
-        string newPath = Path.Combine(basePath, "drivelog.db");
-        if (File.Exists(oldPath) && !File.Exists(newPath))
-        {
-            try { File.Copy(oldPath, newPath); } catch { return oldPath; }
-        }
-        return File.Exists(newPath) ? newPath : oldPath;
+        return Path.Combine(basePath, "drivelog.db");
 #else
         string dir = Path.Combine(basePath, "DriveLog");
-        string newDb = Path.Combine(dir, "drivelog.db");
         if (!Directory.Exists(dir))
         {
-            try 
-            { 
-                Directory.CreateDirectory(dir); 
-                string oldFile = Path.Combine(basePath, "AutoCareApp", "autocare.db");
-                if (File.Exists(oldFile) && !File.Exists(newDb))
-                {
-                    File.Copy(oldFile, newDb);
-                }
-            } 
-            catch { }
+            try { Directory.CreateDirectory(dir); } catch { }
         }
         return Path.Combine(dir, "drivelog.db");
 #endif

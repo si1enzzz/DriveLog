@@ -3,7 +3,7 @@ using Android.Content.PM;
 using Android.Views;
 using Avalonia.Android;
 
-namespace AutoCareApp.Android;
+namespace DriveLog.Android;
 
 [Activity(
     Label = "DriveLog",

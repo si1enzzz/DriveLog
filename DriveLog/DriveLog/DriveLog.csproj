@@ -1,9 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <RootNamespace>AutoCareApp</RootNamespace>
+    <RootNamespace>DriveLog</RootNamespace>
     <Version>0.3.0</Version>
     <Nullable>enable</Nullable>
     <TargetFrameworks>net10.0;net10.0-android</TargetFrameworks>
+    <AssemblyName>DriveLog</AssemblyName>
   </PropertyGroup>
 
   <!-- Windows: запускаемое приложение -->

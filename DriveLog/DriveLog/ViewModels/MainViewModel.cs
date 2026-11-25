@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using AutoCareApp.Models;
-using AutoCareApp.Services;
+using DriveLog.Models;
+using DriveLog.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-namespace AutoCareApp.ViewModels;
+namespace DriveLog.ViewModels;
 
 public partial class MainViewModel : ViewModelBase
 {
@@ -32,6 +32,17 @@ public partial class MainViewModel : ViewModelBase
         "Коричневый", "Бежевый", "Голубой", "Оранжевый", "Желтый", "Бордовый", "Фиолетовый", "Золотистый"
     };
 
+    public ObservableCollection<string> PartTitleSuggestions { get; } = new()
+    {
+        "Масло ДВС + масляный фильтр",
+        "Воздушный фильтр",
+        "Салонный фильтр",
+        "Передние тормозные колодки",
+        "Задние тормозные колодки",
+        "Свечи зажигания",
+        "Шиномонтаж",
+        "Развал-схождение"
+    };
     // Список всех автомобилей
     public ObservableCollection<Vehicle> Vehicles { get; } = new();
 
@@ -122,6 +133,8 @@ public partial class MainViewModel : ViewModelBase
     [NotifyPropertyChangedFor(nameof(RuLangBtnFg))]
     [NotifyPropertyChangedFor(nameof(EnLangBtnBg))]
     [NotifyPropertyChangedFor(nameof(EnLangBtnFg))]
+    [NotifyPropertyChangedFor(nameof(DeletePartItemButtonBg))]
+    [NotifyPropertyChangedFor(nameof(DeletePartItemButtonFg))]
     public partial bool IsDarkTheme { get; set; } = true;
 
     // Палитра Dark: фон #000000, карточки #0F0F0F, акцент #074CBA, расходы #F2F2F2
@@ -227,6 +240,7 @@ public partial class MainViewModel : ViewModelBase
     // --- ФОРМА ДОБАВЛЕНИЯ АВТОМОБИЛЯ ---
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsAnyFormOpen))]
+    [NotifyPropertyChangedFor(nameof(IsAnyInputFormOpen))]
     public partial bool IsAddingVehicle { get; set; } = false;
 
     [ObservableProperty]
@@ -251,7 +265,7 @@ public partial class MainViewModel : ViewModelBase
     public partial string NewColor { get; set; } = string.Empty;
 
     [ObservableProperty]
-    public partial decimal? NewVehicleMileage { get; set; } = 0;
+    public partial decimal? NewVehicleMileage { get; set; } = null;
 
     [ObservableProperty]
     public partial string VehicleErrorMessage { get; set; } = string.Empty;
@@ -268,21 +282,66 @@ public partial class MainViewModel : ViewModelBase
     // --- ДИАЛОГ ПОДТВЕРЖДЕНИЯ УДАЛЕНИЯ АВТОМОБИЛЯ ---
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsAnyFormOpen))]
+    [NotifyPropertyChangedFor(nameof(IsAnyDeleteConfirmOpen))]
     public partial bool IsConfirmingDeleteVehicle { get; set; } = false;
+
+    // --- ДИАЛОГ ПОДТВЕРЖДЕНИЯ УДАЛЕНИЯ ЗАПИСИ ОБСЛУЖИВАНИЯ ---
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsAnyFormOpen))]
+    [NotifyPropertyChangedFor(nameof(IsAnyDeleteConfirmOpen))]
+    public partial bool IsConfirmingDeleteRecord { get; set; } = false;
+
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DeleteRecordConfirmMessage))]
+    public partial ServiceRecord? RecordToDelete { get; set; } = null;
+
+    public string DeleteRecordConfirmMessage => RecordToDelete != null
+        ? string.Format(Strings.DeleteRecordConfirmFormat, RecordToDelete.PartTitle)
+        : Strings.DeleteRecordConfirmTitle;
 
     // --- ФОРМА ДОБАВЛЕНИЯ ЗАПИСИ ---
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(AddButtonText))]
     [NotifyPropertyChangedFor(nameof(IsAnyFormOpen))]
+    [NotifyPropertyChangedFor(nameof(IsAnyInputFormOpen))]
     public partial bool IsAddingRecord { get; set; } = false;
 
     public string AddButtonText => IsAddingRecord ? "Отмена" : "Добавить запись о замене";
 
     // Открыта ли хоть одна модальная форма (для эффекта затемнения фона)
-    public bool IsAnyFormOpen => IsAddingVehicle || IsAddingRecord || IsConfirmingDeleteVehicle;
+    public bool IsAnyFormOpen => IsAddingVehicle || IsAddingRecord || IsConfirmingDeleteVehicle || IsConfirmingDeleteRecord || IsConfirmingDeletePartItem;
+    public bool IsAnyInputFormOpen => IsAddingVehicle || IsAddingRecord;
+    public bool IsAnyDeleteConfirmOpen => IsConfirmingDeleteVehicle || IsConfirmingDeleteRecord || IsConfirmingDeletePartItem;
+    public ObservableCollection<PartItem> NewPartItems { get; } = new();
+
+    public bool CanDeletePartItem => NewPartItems.Count > 1;
+    public string DeletePartItemButtonBg => CanDeletePartItem
+        ? "#E03E3E"
+        : (IsDarkTheme ? "#2C2C30" : "#D1D1D6");
+    public string DeletePartItemButtonFg => CanDeletePartItem
+        ? "#FFFFFF"
+        : (IsDarkTheme ? "#6E6E73" : "#8E8E93");
+
+    private void NotifyPartItemDeleteStateChanged()
+    {
+        OnPropertyChanged(nameof(CanDeletePartItem));
+        OnPropertyChanged(nameof(DeletePartItemButtonBg));
+        OnPropertyChanged(nameof(DeletePartItemButtonFg));
+    }
 
     [ObservableProperty]
-    public partial string NewPartTitle { get; set; } = string.Empty;
+    [NotifyPropertyChangedFor(nameof(IsAnyFormOpen))]
+    [NotifyPropertyChangedFor(nameof(IsAnyDeleteConfirmOpen))]
+    public partial bool IsConfirmingDeletePartItem { get; set; } = false;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DeletePartItemConfirmMessage))]
+    public partial PartItem? PartItemToDelete { get; set; } = null;
+
+    public string DeletePartItemConfirmMessage => PartItemToDelete != null && !string.IsNullOrWhiteSpace(PartItemToDelete.Title)
+        ? $"Удалить деталь «{PartItemToDelete.Title}»?"
+        : "Удалить эту строку детали?";
 
     [ObservableProperty]
     public partial DateTimeOffset? NewDate { get; set; } = DateTimeOffset.Now;
@@ -294,10 +353,7 @@ public partial class MainViewModel : ViewModelBase
     public partial decimal? NewMileage { get; set; } = 0;
 
     [ObservableProperty]
-    public partial decimal? NewPartCost { get; set; } = 0;
-
-    [ObservableProperty]
-    public partial decimal? NewLaborCost { get; set; } = 0;
+    public partial decimal? NewLaborCost { get; set; } = null;
 
     [ObservableProperty]
     public partial string NewServiceName { get; set; } = "Сам в гараже";
@@ -319,6 +375,8 @@ public partial class MainViewModel : ViewModelBase
 
     public MainViewModel()
     {
+        NewPartItems.CollectionChanged += (_, _) => NotifyPartItemDeleteStateChanged();
+
         // Загрузка сохранённых автомобилей из локальной базы данных SQLite
         try
         {
@@ -441,6 +499,8 @@ public partial class MainViewModel : ViewModelBase
             // Взаимное закрытие: если открываем добавление авто, закрываем форму записи и окно удаления
             IsAddingRecord = false;
             IsConfirmingDeleteVehicle = false;
+            IsConfirmingDeleteRecord = false;
+            RecordToDelete = null;
         }
 
         VehicleErrorMessage = string.Empty;
@@ -451,7 +511,7 @@ public partial class MainViewModel : ViewModelBase
         NewEngineVolume = string.Empty;
         NewHorsepower = string.Empty;
         NewColor = string.Empty;
-        NewVehicleMileage = 0;
+        NewVehicleMileage = null;
         BrandSuggestions.Clear();
         foreach (var b in CarCatalogService.PopularBrands) BrandSuggestions.Add(b);
         ModelSuggestions.Clear();
@@ -493,6 +553,8 @@ public partial class MainViewModel : ViewModelBase
         IsAddingVehicle = true;
         IsAddingRecord = false;
         IsConfirmingDeleteVehicle = false;
+        IsConfirmingDeleteRecord = false;
+        RecordToDelete = null;
         OnPropertyChanged(nameof(VehicleFormTitle));
         OnPropertyChanged(nameof(VehicleFormSubmitButtonText));
     }
@@ -577,6 +639,8 @@ public partial class MainViewModel : ViewModelBase
         IsAddingVehicle = false;
         IsAddingRecord = false;
         IsConfirmingDeleteVehicle = true;
+        IsConfirmingDeleteRecord = false;
+        RecordToDelete = null;
     }
 
     // Отмена удаления в модальном окне
@@ -621,10 +685,14 @@ public partial class MainViewModel : ViewModelBase
             // Взаимное закрытие: если открываем добавление записи, закрываем добавление авто и окно удаления
             IsAddingVehicle = false;
             IsConfirmingDeleteVehicle = false;
-            NewPartTitle = string.Empty;
+            IsConfirmingDeleteRecord = false;
+            IsConfirmingDeletePartItem = false;
+            RecordToDelete = null;
+            PartItemToDelete = null;
+            NewPartItems.Clear();
+            NewPartItems.Add(new PartItem());
             NewCategory = "ТО";
-            NewPartCost = 0m;
-            NewLaborCost = 0m;
+            NewLaborCost = null;
             NewNotes = string.Empty;
             NewServiceName = "Сам в гараже";
         }
@@ -647,11 +715,19 @@ public partial class MainViewModel : ViewModelBase
         if (record == null) return;
 
         EditingRecordId = record.Id;
-        NewPartTitle = record.PartTitle;
+        NewPartItems.Clear();
+        foreach (var part in record.PartsList)
+        {
+            NewPartItems.Add(new PartItem
+            {
+                Title = part.Title,
+                Cost = part.Cost
+            });
+        }
+
         NewCategory = record.Category;
         NewDate = new DateTimeOffset(record.Date);
         NewMileage = record.Mileage;
-        NewPartCost = record.PartCost;
         NewLaborCost = record.LaborCost;
         NewServiceName = record.ServiceName;
         NewNotes = record.Notes;
@@ -660,19 +736,91 @@ public partial class MainViewModel : ViewModelBase
         IsAddingRecord = true;
         IsAddingVehicle = false;
         IsConfirmingDeleteVehicle = false;
+        IsConfirmingDeleteRecord = false;
+        IsConfirmingDeletePartItem = false;
+        RecordToDelete = null;
+        PartItemToDelete = null;
 
         OnPropertyChanged(nameof(RecordFormTitle));
         OnPropertyChanged(nameof(RecordFormSubmitButtonText));
     }
 
     [RelayCommand]
-    private void DeleteRecord(ServiceRecord? record)
+    private void AddPartItem()
     {
-        if (record == null || SelectedVehicle == null) return;
+        NewPartItems.Add(new PartItem());
+    }
 
+    [RelayCommand]
+    private void RequestDeletePartItem(PartItem? item)
+    {
+        if (item == null || !CanDeletePartItem) return;
+        PartItemToDelete = item;
+        IsConfirmingDeletePartItem = true;
+    }
+
+    [RelayCommand]
+    private void ConfirmDeletePartItem()
+    {
+        if (PartItemToDelete != null && CanDeletePartItem)
+        {
+            NewPartItems.Remove(PartItemToDelete);
+            if (NewPartItems.Count == 0)
+            {
+                NewPartItems.Add(new PartItem());
+            }
+        }
+        IsConfirmingDeletePartItem = false;
+        PartItemToDelete = null;
+    }
+
+    [RelayCommand]
+    private void CancelDeletePartItem()
+    {
+        IsConfirmingDeletePartItem = false;
+        PartItemToDelete = null;
+    }
+
+    // Запрос на удаление записи (открывает окно подтверждения)
+    [RelayCommand]
+    private void RequestDeleteRecord(ServiceRecord? record)
+    {
+        if (record == null) return;
+
+        RecordToDelete = record;
+        IsAddingVehicle = false;
+        IsAddingRecord = false;
+        IsConfirmingDeleteVehicle = false;
+        IsConfirmingDeleteRecord = true;
+        OnPropertyChanged(nameof(DeleteRecordConfirmMessage));
+    }
+
+    // Отмена удаления записи в модальном окне
+    [RelayCommand]
+    private void CancelDeleteRecord()
+    {
+        IsConfirmingDeleteRecord = false;
+        RecordToDelete = null;
+    }
+
+    // Реальное удаление записи после подтверждения пользователем
+    [RelayCommand]
+    private void ConfirmDeleteRecord()
+    {
+        if (RecordToDelete == null || SelectedVehicle == null)
+        {
+            IsConfirmingDeleteRecord = false;
+            RecordToDelete = null;
+            return;
+        }
+
+        var record = RecordToDelete;
         _db.DeleteRecord(record.Id);
         SelectedVehicle.Records.Remove(record);
         SelectedVehicle.NotifyTotalSpentChanged();
+
+        IsConfirmingDeleteRecord = false;
+        RecordToDelete = null;
 
         OnPropertyChanged(nameof(TotalGarageSpent));
         OnPropertyChanged(nameof(TotalRecordsCount));
@@ -684,10 +832,24 @@ public partial class MainViewModel : ViewModelBase
         IsAddingVehicle = false;
         IsAddingRecord = false;
         IsConfirmingDeleteVehicle = false;
+        IsConfirmingDeleteRecord = false;
+        IsConfirmingDeletePartItem = false;
+        PartItemToDelete = null;
+        RecordToDelete = null;
         EditingVehicleId = null;
         EditingRecordId = null;
         VehicleErrorMessage = string.Empty;
         RecordErrorMessage = string.Empty;
+    }
+
+    [RelayCommand]
+    private void CancelActiveDelete()
+    {
+        IsConfirmingDeleteVehicle = false;
+        IsConfirmingDeleteRecord = false;
+        RecordToDelete = null;
+        IsConfirmingDeletePartItem = false;
+        PartItemToDelete = null;
     }
 
     [RelayCommand]
@@ -699,14 +861,21 @@ public partial class MainViewModel : ViewModelBase
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(NewPartTitle))
+        var validParts = NewPartItems
+            .Where(p => !string.IsNullOrWhiteSpace(p.Title))
+            .Select(p => new PartItem { Title = p.Title.Trim(), Cost = p.Cost })
+            .ToList();
+
+        if (validParts.Count == 0)
         {
-            RecordErrorMessage = "Введите название детали!";
+            RecordErrorMessage = "Введите хотя бы одну деталь!";
             return;
         }
 
+        string combinedTitle = string.Join(", ", validParts.Select(p => p.Title));
+        decimal partCost = validParts.Sum(p => p.Cost ?? 0m);
+        string partsJson = System.Text.Json.JsonSerializer.Serialize(validParts);
         int mileageAtSwap = (int)(NewMileage ?? SelectedVehicle.CurrentMileage);
-        decimal partCost = NewPartCost ?? 0m;
         decimal laborCost = NewLaborCost ?? 0m;
 
         if (EditingRecordId != null)
@@ -715,7 +884,8 @@ public partial class MainViewModel : ViewModelBase
             var existing = SelectedVehicle.Records.FirstOrDefault(r => r.Id == EditingRecordId.Value);
             if (existing != null)
             {
-                existing.PartTitle = NewPartTitle.Trim();
+                existing.PartTitle = combinedTitle;
+                existing.PartsJson = partsJson;
                 existing.Category = string.IsNullOrWhiteSpace(NewCategory) ? "ТО" : NewCategory.Trim();
                 existing.Mileage = mileageAtSwap;
                 existing.PartCost = partCost;
@@ -732,6 +902,12 @@ public partial class MainViewModel : ViewModelBase
                     _db.SaveVehicle(SelectedVehicle);
                 }
 
+                int index = SelectedVehicle.Records.IndexOf(existing);
+                if (index >= 0)
+                {
+                    SelectedVehicle.Records[index] = existing;
+                }
+
                 SelectedVehicle.NotifyTotalSpentChanged();
             }
         }
@@ -741,7 +917,8 @@ public partial class MainViewModel : ViewModelBase
             var record = new ServiceRecord
             {
                 VehicleId = SelectedVehicle.Id,
-                PartTitle = NewPartTitle.Trim(),
+                PartTitle = combinedTitle,
+                PartsJson = partsJson,
                 Category = string.IsNullOrWhiteSpace(NewCategory) ? "ТО" : NewCategory.Trim(),
                 Mileage = mileageAtSwap,
                 PartCost = partCost,
@@ -764,9 +941,8 @@ public partial class MainViewModel : ViewModelBase
         }
 
         EditingRecordId = null;
-        NewPartTitle = string.Empty;
-        NewPartCost = 0m;
-        NewLaborCost = 0m;
+        NewPartItems.Clear();
+        NewLaborCost = null;
         NewNotes = string.Empty;
         NewDate = DateTimeOffset.Now;
         RecordErrorMessage = string.Empty;

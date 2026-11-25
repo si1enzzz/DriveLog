@@ -1,7 +1,7 @@
 ﻿using Avalonia;
 using System;
 
-namespace AutoCareApp;
+namespace DriveLog;
 
 public sealed class Program
 {

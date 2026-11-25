@@ -4,10 +4,10 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using AutoCareApp.ViewModels;
-using AutoCareApp.Views;
+using DriveLog.ViewModels;
+using DriveLog.Views;
 
-namespace AutoCareApp;
+namespace DriveLog;
 
 public partial class App : Application
 {
@@ -76,7 +76,7 @@ public partial class App : Application
             Background = Avalonia.Media.Brushes.Black,
             Content = new TextBlock
             {
-                Text = "ОШИБКА ЗАПУСКА AUTOCARE:\n\n" + ex.GetType().FullName + ": " + ex.Message + "\n\nСтек:\n" + ex.StackTrace + "\n\nInner: " + ex.InnerException?.Message,
+                Text = "ОШИБКА ЗАПУСКА DRIVELOG:\n\n" + ex.GetType().FullName + ": " + ex.Message + "\n\nСтек:\n" + ex.StackTrace + "\n\nInner: " + ex.InnerException?.Message,
                 Foreground = Avalonia.Media.Brushes.OrangeRed,
                 FontSize = 13,
                 TextWrapping = Avalonia.Media.TextWrapping.Wrap,

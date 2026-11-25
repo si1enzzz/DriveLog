@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="DriveLog/DriveLog.csproj" />
+  <Project Path="DriveLog.Android/DriveLog.Android.csproj" />
+</Solution>

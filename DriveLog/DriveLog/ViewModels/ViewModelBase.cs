@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace AutoCareApp.ViewModels;
+namespace DriveLog.ViewModels;
 
 public abstract class ViewModelBase : ObservableObject
 {

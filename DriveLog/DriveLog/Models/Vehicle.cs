@@ -5,7 +5,7 @@ using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using SQLite;
 
-namespace AutoCareApp.Models;
+namespace DriveLog.Models;
 
 public partial class Vehicle : ObservableObject
 {

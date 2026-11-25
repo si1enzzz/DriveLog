@@ -2,9 +2,9 @@
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
-using AutoCareApp.ViewModels;
+using DriveLog.ViewModels;
 
-namespace AutoCareApp;
+namespace DriveLog;
 
 /// <summary>
 /// Given a view model, returns the corresponding view if possible.

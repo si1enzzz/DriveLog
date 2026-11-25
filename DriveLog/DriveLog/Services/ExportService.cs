@@ -3,9 +3,9 @@ using System.IO;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using AutoCareApp.Models;
+using DriveLog.Models;
 
-namespace AutoCareApp.Services;
+namespace DriveLog.Services;
 
 /// <summary>
 /// Сервис для экспорта данных об автомобиле и истории его обслуживания в форматы Markdown, TXT и JSON.

@@ -1,4 +1,4 @@
-namespace AutoCareApp.Services;
+namespace DriveLog.Services;
 
 /// <summary>
 /// Локализованные строки интерфейса (Русский и Английский).
@@ -20,6 +20,8 @@ public class AppStrings
     public string DeleteCar { get; init; } = "";
     public string DeleteConfirmTitle { get; init; } = "";
     public string DeleteConfirmFormat { get; init; } = "";
+    public string DeleteRecordConfirmTitle { get; init; } = "";
+    public string DeleteRecordConfirmFormat { get; init; } = "";
     public string YesDelete { get; init; } = "";
     public string Cancel { get; init; } = "";
     public string NewVehicle { get; init; } = "";
@@ -81,6 +83,8 @@ public class AppStrings
         DeleteCar = "Удалить",
         DeleteConfirmTitle = "Удалить автомобиль?",
         DeleteConfirmFormat = "Вы уверены, что хотите удалить {0}? Все данные и история обслуживания ({1} записей) будут удалены безвозвратно.",
+        DeleteRecordConfirmTitle = "Удалить запись?",
+        DeleteRecordConfirmFormat = "Вы уверены, что хотите удалить запись «{0}»? Это действие нельзя отменить.",
         YesDelete = "Да, удалить",
         Cancel = "Отмена",
         NewVehicle = "Новый автомобиль",
@@ -143,6 +147,8 @@ public class AppStrings
         DeleteCar = "Delete",
         DeleteConfirmTitle = "Delete vehicle?",
         DeleteConfirmFormat = "Are you sure you want to delete {0}? All vehicle data and maintenance history ({1} records) will be deleted permanently.",
+        DeleteRecordConfirmTitle = "Delete record?",
+        DeleteRecordConfirmFormat = "Are you sure you want to delete \"{0}\"? This action cannot be undone.",
         YesDelete = "Yes, delete",
         Cancel = "Cancel",
         NewVehicle = "New vehicle",

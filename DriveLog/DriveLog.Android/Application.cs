@@ -5,10 +5,10 @@ using Android.Runtime;
 using Avalonia;
 using Avalonia.Android;
 
-namespace AutoCareApp.Android;
+namespace DriveLog.Android;
 
 [Application]
-public class Application : AvaloniaAndroidApplication<AutoCareApp.App>
+public class Application : AvaloniaAndroidApplication<DriveLog.App>
 {
     public Application(nint javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
     {
@@ -38,12 +38,12 @@ public class Application : AvaloniaAndroidApplication<AutoCareApp.App>
         try
         {
             string line = "[" + DateTime.UtcNow + "] [" + tag + "] " + ex + "\n";
-            global::Android.Util.Log.Error("AutoCare", line);
+            global::Android.Util.Log.Error("DriveLog", line);
 
             var dir = global::Android.OS.Environment.GetExternalStoragePublicDirectory(global::Android.OS.Environment.DirectoryDownloads)?.AbsolutePath;
             if (!string.IsNullOrEmpty(dir))
             {
-                File.AppendAllText(Path.Combine(dir, "AutoCare_Crash.txt"), line);
+                File.AppendAllText(Path.Combine(dir, "DriveLog_Crash.txt"), line);
             }
         }
         catch { }

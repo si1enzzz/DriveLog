@@ -1,11 +1,11 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="using:AutoCareApp.ViewModels"
-             xmlns:m="using:AutoCareApp.Models"
+             xmlns:vm="using:DriveLog.ViewModels"
+             xmlns:m="using:DriveLog.Models"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="470" d:DesignHeight="880"
-             x:Class="AutoCareApp.Views.MainView" x:Name="RootView"
+             x:Class="DriveLog.Views.MainView" x:Name="RootView"
              x:DataType="vm:MainViewModel"
              Background="{Binding BgColor}">
 
@@ -75,6 +75,16 @@
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="TextAlignment" Value="Center" />
             <Setter Property="Margin" Value="0" />
+        </Style>
+
+        <!-- Автоскрытие полосы прокрутки через 2 секунды с плавным затуханием -->
+        <Style Selector="ScrollViewer /template/ ScrollBar">
+            <Setter Property="Opacity" Value="0" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.4" />
+                </Transitions>
+            </Setter>
         </Style>
     </UserControl.Styles>
 
@@ -293,7 +303,7 @@
                                                               Foreground="{Binding #RootView.((vm:MainViewModel)DataContext).TextSecondaryColor}" />
                                                 </Button>
 
-                                                <Button Command="{Binding #RootView.((vm:MainViewModel)DataContext).DeleteRecordCommand}"
+                                                <Button Command="{Binding #RootView.((vm:MainViewModel)DataContext).RequestDeleteRecordCommand}"
                                                         CommandParameter="{Binding}"
                                                         Background="Transparent"
                                                         BorderThickness="0"
@@ -339,7 +349,8 @@
                                         <!-- Заметка (если есть) -->
                                         <TextBlock Text="{Binding Notes}" 
                                                    Foreground="{Binding #RootView.((vm:MainViewModel)DataContext).TextSecondaryColor}" 
-                                                   FontSize="12" FontStyle="Italic" TextWrapping="Wrap" />
+                                                   FontSize="12" FontStyle="Italic" TextWrapping="Wrap" 
+                                                   IsVisible="{Binding HasNotes}"/>
                                     </StackPanel>
                                 </Border>
                             </DataTemplate>
@@ -722,9 +733,9 @@
             </Button>
         </Border>
 
-        <!-- СЛОЙ 2: Модальные окна поверх затемнения (прокручиваются пальцем над клавиатурой) -->
+        <!-- СЛОЙ 2: Формы ввода поверх затемнения (прокручиваются пальцем над клавиатурой) -->
         <ScrollViewer Grid.Row="0" Grid.RowSpan="2"
-                      IsVisible="{Binding IsAnyFormOpen}"
+                      IsVisible="{Binding IsAnyInputFormOpen}"
                       VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Disabled"
                       VerticalAlignment="Stretch"
@@ -817,7 +828,7 @@
                             </StackPanel>
                             <StackPanel Grid.Column="1" Spacing="4" Margin="5,0,0,0">
                                 <TextBlock Text="{Binding Strings.MileageKm}" Foreground="{Binding TextSecondaryColor}" FontSize="12" />
-                                <NumericUpDown Value="{Binding NewVehicleMileage}" Minimum="0" FormatString="N0" HorizontalAlignment="Stretch" />
+                                <NumericUpDown Value="{Binding NewVehicleMileage}" Minimum="0" FormatString="N0" HorizontalAlignment="Stretch" PlaceholderText="0" />
                             </StackPanel>
                         </Grid>
 
@@ -854,9 +865,86 @@
                         <TextBlock Text="{Binding RecordErrorMessage}" Foreground="#E03E3E" FontWeight="SemiBold" FontSize="13" />
 
                         <!-- Название детали -->
-                        <StackPanel Spacing="4">
+                                                <!-- Список деталей и их цены -->
+                        <StackPanel Spacing="6">
                             <TextBlock Text="{Binding Strings.PartTitle}" Foreground="{Binding TextSecondaryColor}" FontSize="12" />
-                            <TextBox Text="{Binding NewPartTitle}" PlaceholderText="Например: Свечи зажигания NGK" />
+
+                            <ItemsControl ItemsSource="{Binding NewPartItems}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="m:PartItem">
+                                        <Grid ColumnDefinitions="*, Auto" Margin="0, 0, 0, 8">
+                                            <!-- Прямоугольная рамка для одной детали -->
+                                            <Border Grid.Column="0"
+                                                    Background="{Binding #RootView.((vm:MainViewModel)DataContext).InputBgColor}"
+                                                    BorderBrush="{Binding #RootView.((vm:MainViewModel)DataContext).CardBorderColor}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="10"
+                                                    Padding="10">
+                                                <StackPanel Spacing="8">
+                                                    <AutoCompleteBox Text="{Binding Title}"
+                                                                     ItemsSource="{Binding #RootView.((vm:MainViewModel)DataContext).PartTitleSuggestions}"
+                                                                     FilterMode="Contains"
+                                                                     MinimumPrefixLength="0"
+                                                                     MaxDropDownHeight="150"
+                                                                     PlaceholderText="Что меняли (например: Масло ДВС)" />
+                                                    <NumericUpDown Value="{Binding Cost}"
+                                                                   Minimum="0"
+                                                                   FormatString="N0"
+                                                                   HorizontalAlignment="Stretch"
+                                                                   PlaceholderText="Цена детали (₽)" />
+                                                </StackPanel>
+                                            </Border>
+
+                                            <!-- Круглый красный минус СНАРУЖИ справа (серый и неактивный, если деталь одна) -->
+                                            <Button Grid.Column="1"
+                                                    Command="{Binding #RootView.((vm:MainViewModel)DataContext).RequestDeletePartItemCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    IsEnabled="{Binding #RootView.((vm:MainViewModel)DataContext).CanDeletePartItem}"
+                                                    Background="{Binding #RootView.((vm:MainViewModel)DataContext).DeletePartItemButtonBg}"
+                                                    Foreground="{Binding #RootView.((vm:MainViewModel)DataContext).DeletePartItemButtonFg}"
+                                                    Width="28" Height="28"
+                                                    CornerRadius="14"
+                                                    Padding="0"
+                                                    Margin="8, 0, 0, 0"
+                                                    VerticalAlignment="Center"
+                                                    HorizontalContentAlignment="Center"
+                                                    VerticalContentAlignment="Center">
+                                                <Button.Styles>
+                                                    <Style Selector="Button:pointerover /template/ ContentPresenter">
+                                                        <Setter Property="Background" Value="#FF4D4D" />
+                                                        <Setter Property="Foreground" Value="White" />
+                                                        <Setter Property="CornerRadius" Value="14" />
+                                                    </Style>
+                                                    <Style Selector="Button:pressed /template/ ContentPresenter">
+                                                        <Setter Property="Background" Value="#B82B2B" />
+                                                        <Setter Property="Foreground" Value="White" />
+                                                        <Setter Property="CornerRadius" Value="14" />
+                                                    </Style>
+                                                    <Style Selector="Button:disabled /template/ ContentPresenter">
+                                                        <Setter Property="Background" Value="{Binding #RootView.((vm:MainViewModel)DataContext).DeletePartItemButtonBg}" />
+                                                        <Setter Property="Foreground" Value="{Binding #RootView.((vm:MainViewModel)DataContext).DeletePartItemButtonFg}" />
+                                                        <Setter Property="CornerRadius" Value="14" />
+                                                    </Style>
+                                                </Button.Styles>
+                                                <TextBlock Text="−" FontSize="18" FontWeight="Bold" Margin="0, -2, 0, 0" />
+                                            </Button>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <!-- Прямоугольная плашка с плюсиком снизу -->
+                            <Button Command="{Binding AddPartItemCommand}"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    Height="40"
+                                    CornerRadius="10"
+                                    Background="Transparent"
+                                    BorderBrush="#074CBA"
+                                    BorderThickness="1.5">
+                                <TextBlock Text="+" FontSize="22" FontWeight="Bold" Foreground="#074CBA" Margin="0, -2, 0, 0" />
+                            </Button>
                         </StackPanel>
 
                         <!-- Дата замены -->
@@ -878,16 +966,11 @@
                         </Grid>
 
                         <!-- Цены: деталь и работа -->
-                        <Grid ColumnDefinitions="*, *" Margin="0, 2, 0, 0">
-                            <StackPanel Grid.Column="0" Spacing="4" Margin="0, 0, 5, 0">
-                                <TextBlock Text="{Binding Strings.PartPrice}" Foreground="{Binding TextSecondaryColor}" FontSize="12" />
-                                <NumericUpDown Value="{Binding NewPartCost}" Minimum="0" FormatString="N0" HorizontalAlignment="Stretch" />
-                            </StackPanel>
-                            <StackPanel Grid.Column="1" Spacing="4" Margin="5, 0, 0, 0">
-                                <TextBlock Text="{Binding Strings.LaborPrice}" Foreground="{Binding TextSecondaryColor}" FontSize="12" />
-                                <NumericUpDown Value="{Binding NewLaborCost}" Minimum="0" FormatString="N0" HorizontalAlignment="Stretch" />
-                            </StackPanel>
-                        </Grid>
+                                                <!-- Цена работы -->
+                        <StackPanel Spacing="4" Margin="0, 2, 0, 0">
+                            <TextBlock Text="{Binding Strings.LaborPrice}" Foreground="{Binding TextSecondaryColor}" FontSize="12" />
+                            <NumericUpDown Value="{Binding NewLaborCost}" Minimum="0" FormatString="N0" HorizontalAlignment="Stretch" PlaceholderText="0" />
+                        </StackPanel>
 
                         <!-- Заметка -->
                         <StackPanel Spacing="4">
@@ -925,7 +1008,28 @@
                         </Grid>
                     </StackPanel>
                 </Border>
+            </Panel>
+        </ScrollViewer>
 
+        <!-- СЛОЙ 3: Диалоги подтверждения удаления (всегда строго по центру экрана) -->
+        <Grid Grid.Row="0" Grid.RowSpan="2"
+              IsVisible="{Binding IsAnyDeleteConfirmOpen}">
+            <Button Background="#66000000"
+                    BorderThickness="0"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    Command="{Binding CancelActiveDeleteCommand}">
+                <Button.Styles>
+                    <Style Selector="Button:pointerover /template/ ContentPresenter">
+                        <Setter Property="Background" Value="#66000000" />
+                    </Style>
+                    <Style Selector="Button:pressed /template/ ContentPresenter">
+                        <Setter Property="Background" Value="#66000000" />
+                    </Style>
+                </Button.Styles>
+            </Button>
+
+            <Panel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="380" Margin="20">
                 <!-- ДИАЛОГ ПОДТВЕРЖДЕНИЯ УДАЛЕНИЯ АВТОМОБИЛЯ -->
                 <Border Background="{Binding CardColor}" 
                         CornerRadius="16" 
@@ -933,8 +1037,7 @@
                         BorderBrush="#E03E3E"
                         BorderThickness="1"
                         BoxShadow="0 10 36 #A0000000"
-                        IsVisible="{Binding IsConfirmingDeleteVehicle}"
-                        MaxWidth="380">
+                        IsVisible="{Binding IsConfirmingDeleteVehicle}">
                     <StackPanel Spacing="16">
                         <!-- Заголовок с предупреждением -->
                         <StackPanel Spacing="8">
@@ -979,7 +1082,109 @@
                         </Grid>
                     </StackPanel>
                 </Border>
+
+                <!-- ДИАЛОГ ПОДТВЕРЖДЕНИЯ УДАЛЕНИЯ ЗАПИСИ ОБСЛУЖИВАНИЯ -->
+                <Border Background="{Binding CardColor}" 
+                        CornerRadius="16" 
+                        Padding="22"
+                        BorderBrush="#E03E3E"
+                        BorderThickness="1"
+                        BoxShadow="0 10 36 #A0000000"
+                        IsVisible="{Binding IsConfirmingDeleteRecord}">
+                    <StackPanel Spacing="16">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="{Binding Strings.DeleteRecordConfirmTitle}" 
+                                       FontSize="19" 
+                                       FontWeight="Bold" 
+                                       Foreground="{Binding TextPrimaryColor}" />
+                            <TextBlock Text="{Binding DeleteRecordConfirmMessage}"
+                                       Foreground="{Binding TextSecondaryColor}" 
+                                       FontSize="13" 
+                                       TextWrapping="Wrap" 
+                                       LineHeight="18" />
+                        </StackPanel>
+
+                        <Grid ColumnDefinitions="*, *" Margin="0, 4, 0, 0">
+                            <Button Grid.Column="0" 
+                                    Content="{Binding Strings.YesDelete}"
+                                    Command="{Binding ConfirmDeleteRecordCommand}"
+                                    Background="#E03E3E" 
+                                    Foreground="White"
+                                    FontWeight="Bold" 
+                                    Height="40" 
+                                    CornerRadius="8"
+                                    HorizontalAlignment="Stretch" 
+                                    HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center" 
+                                    Margin="0, 0, 5, 0" />
+
+                            <Button Grid.Column="1" 
+                                    Content="{Binding Strings.Cancel}"
+                                    Command="{Binding CancelDeleteRecordCommand}"
+                                    Background="{Binding CardBorderColor}" 
+                                    Foreground="{Binding TextSecondaryColor}"
+                                    FontWeight="Medium" 
+                                    Height="40" 
+                                    CornerRadius="8"
+                                    HorizontalAlignment="Stretch" 
+                                    HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center" 
+                                    Margin="5, 0, 0, 0" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- ДИАЛОГ ПОДТВЕРЖДЕНИЯ УДАЛЕНИЯ ОДНОЙ ДЕТАЛИ ИЗ ФОРМЫ -->
+                <Border Background="{Binding CardColor}"
+                        CornerRadius="16"
+                        Padding="22"
+                        BorderBrush="#E03E3E"
+                        BorderThickness="2"
+                        BoxShadow="0 10 36 #C0000000"
+                        IsVisible="{Binding IsConfirmingDeletePartItem}">
+                    <StackPanel Spacing="16">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Удалить деталь?"
+                                       FontSize="19"
+                                       FontWeight="Bold"
+                                       Foreground="{Binding TextPrimaryColor}" />
+                            <TextBlock Text="{Binding DeletePartItemConfirmMessage}"
+                                       Foreground="{Binding TextSecondaryColor}"
+                                       FontSize="13"
+                                       TextWrapping="Wrap"
+                                       LineHeight="18" />
+                        </StackPanel>
+
+                        <Grid ColumnDefinitions="*, *" Margin="0, 4, 0, 0">
+                            <Button Grid.Column="0"
+                                    Content="{Binding Strings.YesDelete}"
+                                    Command="{Binding ConfirmDeletePartItemCommand}"
+                                    Background="#E03E3E"
+                                    Foreground="White"
+                                    FontWeight="Bold"
+                                    Height="40"
+                                    CornerRadius="8"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    Margin="0, 0, 5, 0" />
+
+                            <Button Grid.Column="1"
+                                    Content="{Binding Strings.Cancel}"
+                                    Command="{Binding CancelDeletePartItemCommand}"
+                                    Background="{Binding CardBorderColor}"
+                                    Foreground="{Binding TextSecondaryColor}"
+                                    FontWeight="Medium"
+                                    Height="40"
+                                    CornerRadius="8"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    Margin="5, 0, 0, 0" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
             </Panel>
-        </ScrollViewer>
+        </Grid>
     </Grid>
 </UserControl>
